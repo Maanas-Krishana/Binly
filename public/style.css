@@ -746,6 +746,11 @@ body {
   margin-bottom: 40px;
 }
 
+.viewer-actions {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
 .btn-delete-subtle {
   background-color: transparent;
   color: var(--accent-red);

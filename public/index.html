@@ -199,14 +199,18 @@
                 <span class="status-indicator live"></span> Live
               </span>
               <span class="save-status-text" id="viewer-save-status">Synced</span>
-              <button class="btn-copy-editor" id="btn-copy-viewer" title="Copy Content">
-                <i class="fa-regular fa-copy"></i>
-              </button>
             </div>
           </div>
           <div class="editor-body no-gutter">
             <textarea id="viewer-editor" placeholder="Empty bin..." readonly spellcheck="false"></textarea>
           </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="viewer-actions">
+          <button id="btn-copy-viewer" class="btn btn-primary btn-block">
+            <i class="fa-regular fa-copy"></i> Copy Bin Content
+          </button>
         </div>
       </div>
     </section>
