@@ -113,27 +113,41 @@
     <!-- VIEW 2: OWNER VIEW (Light Theme UI) -->
     <section id="view-owner" class="app-view">
       <div class="owner-content">
-        <div class="bin-code-container">
-          <div class="bin-code-label">Bin Code</div>
-          <div class="bin-code-row">
-            <div id="owner-bin-code" class="bin-code-large">------</div>
-            <button class="btn-share" id="btn-share-owner" title="Share Bin Link">
-              <i class="fa-solid fa-share-nodes"></i>
-            </button>
+        <div class="bin-meta-block">
+          <div class="meta-row-top">
+            <div class="meta-code-group">
+              <span class="meta-label">Bin Code</span>
+              <span id="owner-bin-code" class="meta-code">------</span>
+            </div>
+            <div class="meta-actions">
+              <button class="btn-meta-action" id="btn-share-owner" title="Share Bin Link">
+                <i class="fa-solid fa-share-nodes"></i> Share
+              </button>
+              <button class="btn-meta-action" id="btn-copy-link-owner" title="Copy Link">
+                <i class="fa-regular fa-copy"></i> Copy Link
+              </button>
+            </div>
           </div>
-        </div>
-        
-        <div class="status-badge" id="owner-status-badge">
-          Status: Owned by you. Expires in 1h / 15m idle.
+          <div class="meta-row-bottom">
+            <i class="fa-regular fa-clock"></i> <span id="owner-status-badge">Status: Owned by you. Expires in 1h / 15m idle.</span>
+          </div>
         </div>
         
         <!-- Editor Card -->
         <div class="editor-card">
           <div class="editor-header">
-            <span class="editor-title">Bin Content (Editable)</span>
-            <button class="btn-copy-editor" id="btn-copy-owner" title="Copy Content">
-              <i class="fa-regular fa-copy"></i>
-            </button>
+            <div class="editor-title-group">
+              <span class="editor-title">Bin Content (Editable)</span>
+              <span class="connection-status" id="owner-connection-status">
+                <span class="status-indicator live"></span> Live
+              </span>
+            </div>
+            <div class="editor-header-actions">
+              <span class="save-status-text" id="owner-save-status">Saved</span>
+              <button class="btn-copy-editor" id="btn-copy-owner" title="Copy Content">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
           </div>
           <div class="editor-body">
             <div class="editor-wrapper">
@@ -145,8 +159,9 @@
         
         <!-- Actions -->
         <div class="owner-actions">
-          <button id="btn-update-bin" class="btn btn-blue">Update Bin</button>
-          <button id="btn-delete-bin" class="btn btn-red">Delete Bin</button>
+          <button id="btn-delete-bin" class="btn-delete-subtle">
+            <i class="fa-regular fa-trash-can"></i> Delete Bin
+          </button>
         </div>
       </div>
     </section>
@@ -157,32 +172,44 @@
       <div class="sparkle-icon viewer-sparkle"><i class="fa-solid fa-sparkles fa-xl"></i></div>
 
       <div class="viewer-content">
-        <div class="bin-code-container">
-          <div class="bin-code-label">Bin Code</div>
-          <div class="bin-code-row">
-            <div id="viewer-bin-code" class="bin-code-large">------</div>
-            <button class="btn-share" id="btn-share-viewer" title="Share Bin Link">
-              <i class="fa-solid fa-share-nodes"></i>
-            </button>
+        <div class="bin-meta-block">
+          <div class="meta-row-top">
+            <div class="meta-code-group">
+              <span class="meta-label">Bin Code</span>
+              <span id="viewer-bin-code" class="meta-code">------</span>
+            </div>
+            <div class="meta-actions">
+              <button class="btn-meta-action" id="btn-share-viewer" title="Share Bin Link">
+                <i class="fa-solid fa-share-nodes"></i> Share
+              </button>
+              <button class="btn-meta-action" id="btn-copy-link-viewer" title="Copy Link">
+                <i class="fa-regular fa-copy"></i> Copy Link
+              </button>
+            </div>
+          </div>
+          <div class="meta-row-bottom">
+            <i class="fa-regular fa-clock"></i> <span id="viewer-status-badge">Viewer View. Expires 1 hour from now, or 15 mins idle.</span>
           </div>
         </div>
-        <p class="viewer-subtitle" id="viewer-status-badge">Viewer View. Expires 1 hour from now, or 15 mins idle.</p>
         
-        <div class="viewer-layout">
-          <!-- Main editor content card -->
-          <div class="editor-card">
-            <div class="editor-header">
+        <!-- Main editor content card -->
+        <div class="editor-card">
+          <div class="editor-header">
+            <div class="editor-title-group">
               <span class="editor-title">Bin Content (Read-only)</span>
+              <span class="connection-status" id="viewer-connection-status">
+                <span class="status-indicator live"></span> Live
+              </span>
             </div>
-            <div class="editor-body no-gutter">
-              <textarea id="viewer-editor" placeholder="Empty bin..." readonly spellcheck="false"></textarea>
+            <div class="editor-header-actions">
+              <span class="save-status-text" id="viewer-save-status">Synced</span>
+              <button class="btn-copy-editor" id="btn-copy-viewer" title="Copy Content">
+                <i class="fa-regular fa-copy"></i>
+              </button>
             </div>
           </div>
-          
-          <!-- Side action column -->
-          <div class="viewer-side-col">
-            <button id="btn-copy-viewer" class="btn btn-primary btn-block">Copy Content</button>
-            <p class="viewer-side-info">Viewer Mode. Content is read-only. This bin expires soon.</p>
+          <div class="editor-body no-gutter">
+            <textarea id="viewer-editor" placeholder="Empty bin..." readonly spellcheck="false"></textarea>
           </div>
         </div>
       </div>

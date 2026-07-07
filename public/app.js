@@ -4,6 +4,62 @@ let currentBinCode = null;
 let saveDebounceTimer = null;
 const DEBOUNCE_DELAY = 1000; // 1 second debounce for auto-save
 
+let lastSaveTime = null;
+let currentSaveState = 'none'; // 'none', 'saving', 'saved'
+let saveStatusInterval = null;
+
+function setConnectionStatus(status) {
+  const ownerLabel = document.getElementById('owner-connection-status');
+  const viewerLabel = document.getElementById('viewer-connection-status');
+  
+  if (ownerLabel) {
+    ownerLabel.innerHTML = `<span class="status-indicator ${status === 'live' ? 'live' : 'offline'}"></span> ${status === 'live' ? 'Live' : 'Offline'}`;
+  }
+  if (viewerLabel) {
+    viewerLabel.innerHTML = `<span class="status-indicator ${status === 'live' ? 'live' : 'offline'}"></span> ${status === 'live' ? 'Live' : 'Offline'}`;
+  }
+}
+
+function setSaveStatus(state) {
+  currentSaveState = state;
+  const ownerSaveText = document.getElementById('owner-save-status');
+  const ownerIndicator = document.querySelector('#owner-connection-status .status-indicator');
+  
+  if (!ownerSaveText) return;
+  
+  if (state === 'Saving...') {
+    ownerSaveText.textContent = 'Saving...';
+    if (ownerIndicator) {
+      ownerIndicator.className = 'status-indicator syncing';
+    }
+  } else if (state === 'Saved') {
+    lastSaveTime = Date.now();
+    ownerSaveText.textContent = 'Saved';
+    if (ownerIndicator) {
+      ownerIndicator.className = 'status-indicator live';
+    }
+    if (!saveStatusInterval) {
+      saveStatusInterval = setInterval(updateSavedAgoText, 5000);
+    }
+  }
+}
+
+function updateSavedAgoText() {
+  if (currentSaveState !== 'Saved' || !lastSaveTime) return;
+  const ownerSaveText = document.getElementById('owner-save-status');
+  if (!ownerSaveText) return;
+  
+  const seconds = Math.floor((Date.now() - lastSaveTime) / 1000);
+  if (seconds < 5) {
+    ownerSaveText.textContent = 'Saved';
+  } else if (seconds < 60) {
+    ownerSaveText.textContent = `Saved ${seconds}s ago`;
+  } else {
+    const minutes = Math.floor(seconds / 60);
+    ownerSaveText.textContent = `Saved ${minutes}m ago`;
+  }
+}
+
 // DOM Elements
 const views = {
   landing: document.getElementById('view-landing'),
@@ -23,9 +79,9 @@ const ownerStatusBadge = document.getElementById('owner-status-badge');
 const ownerEditor = document.getElementById('owner-editor');
 const ownerGutter = document.getElementById('owner-editor-gutter');
 const btnCopyOwner = document.getElementById('btn-copy-owner');
-const btnUpdateBin = document.getElementById('btn-update-bin');
 const btnDeleteBin = document.getElementById('btn-delete-bin');
 const btnShareOwner = document.getElementById('btn-share-owner');
+const btnCopyLinkOwner = document.getElementById('btn-copy-link-owner');
 
 // Viewer Page Elements
 const viewerBinCode = document.getElementById('viewer-bin-code');
@@ -33,6 +89,7 @@ const viewerStatusBadge = document.getElementById('viewer-status-badge');
 const viewerEditor = document.getElementById('viewer-editor');
 const btnCopyViewer = document.getElementById('btn-copy-viewer');
 const btnShareViewer = document.getElementById('btn-share-viewer');
+const btnCopyLinkViewer = document.getElementById('btn-copy-link-viewer');
 
 // Error Page Elements
 const btnErrorHome = document.getElementById('btn-error-home');
@@ -173,6 +230,15 @@ function setupSocket(code, isOwner, ownerToken) {
   
   socket.on('connect', () => {
     socket.emit('join-bin', { code, isOwner, ownerToken });
+    setConnectionStatus('live');
+  });
+
+  socket.on('disconnect', () => {
+    setConnectionStatus('offline');
+  });
+
+  socket.on('connect_error', () => {
+    setConnectionStatus('offline');
   });
 
   // Listen for real-time edits (Viewer Only)
@@ -180,6 +246,10 @@ function setupSocket(code, isOwner, ownerToken) {
     if (!isOwner && viewerEditor.value !== content) {
       viewerEditor.value = content;
       showToast('Bin content updated in real-time', 'info');
+      const viewerSaveText = document.getElementById('viewer-save-status');
+      if (viewerSaveText) {
+        viewerSaveText.textContent = 'Synced';
+      }
     }
   });
 
@@ -243,6 +313,9 @@ ownerEditor.addEventListener('scroll', () => {
 ownerEditor.addEventListener('input', () => {
   updateLineNumbers();
   
+  // Set state to Saving...
+  setSaveStatus('Saving...');
+  
   // Debounce auto-save
   if (saveDebounceTimer) {
     clearTimeout(saveDebounceTimer);
@@ -272,24 +345,16 @@ async function saveBinContent(isAutoSave = false) {
       throw new Error('Failed to save content');
     }
     
-    if (isAutoSave) {
-      console.log('Bin auto-saved successfully');
-    } else {
-      showToast('Bin updated successfully', 'success');
-    }
+    // Set state to Saved
+    setSaveStatus('Saved');
+    
   } catch (error) {
     console.error(error);
     showToast('Failed to save updates', 'error');
+    const ownerSaveText = document.getElementById('owner-save-status');
+    if (ownerSaveText) ownerSaveText.textContent = 'Save Error';
   }
 }
-
-// Manual Save button click
-btnUpdateBin.addEventListener('click', () => {
-  if (saveDebounceTimer) {
-    clearTimeout(saveDebounceTimer);
-  }
-  saveBinContent(false);
-});
 
 // Delete Bin button click (Trigger UI modal)
 btnDeleteBin.addEventListener('click', () => {
@@ -447,12 +512,28 @@ function shareBin(code) {
   }
 }
 
+function copyBinLink(code) {
+  if (!code) return;
+  const shareUrl = `${window.location.origin}/${code}`;
+  navigator.clipboard.writeText(shareUrl)
+    .then(() => showToast('Bin link copied to clipboard!', 'success'))
+    .catch(() => showToast('Failed to copy link', 'error'));
+}
+
 btnShareOwner.addEventListener('click', () => {
   shareBin(currentBinCode);
 });
 
 btnShareViewer.addEventListener('click', () => {
   shareBin(currentBinCode);
+});
+
+btnCopyLinkOwner.addEventListener('click', () => {
+  copyBinLink(currentBinCode);
+});
+
+btnCopyLinkViewer.addEventListener('click', () => {
+  copyBinLink(currentBinCode);
 });
 
 // Initialize Route
