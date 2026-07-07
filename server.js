@@ -20,10 +20,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // API Routes
 
 // Create a new bin
-app.post('/api/bins', (req, res) => {
+app.post('/api/bins', async (req, res) => {
   try {
     const { content } = req.body;
-    const bin = db.createBin(content || '');
+    const bin = await db.createBin(content || '');
     res.status(201).json({
       code: bin.code,
       content: bin.content,
@@ -36,11 +36,11 @@ app.post('/api/bins', (req, res) => {
 });
 
 // Get a bin's data
-app.get('/api/bins/:code', (req, res) => {
+app.get('/api/bins/:code', async (req, res) => {
   const { code } = req.params;
   const ownerTokenHeader = req.headers['owner-token'];
   
-  const bin = db.getBin(code.toUpperCase());
+  const bin = await db.getBin(code.toUpperCase());
   if (!bin) {
     return res.status(404).json({ error: 'Bin not found or expired' });
   }
@@ -64,12 +64,12 @@ app.get('/api/bins/:code', (req, res) => {
 });
 
 // Update a bin's content (Owner only)
-app.put('/api/bins/:code', (req, res) => {
+app.put('/api/bins/:code', async (req, res) => {
   const { code } = req.params;
   const { content } = req.body;
   const ownerToken = req.headers['owner-token'];
   
-  const bin = db.getBin(code.toUpperCase());
+  const bin = await db.getBin(code.toUpperCase());
   if (!bin) {
     return res.status(404).json({ error: 'Bin not found or expired' });
   }
@@ -79,7 +79,7 @@ app.put('/api/bins/:code', (req, res) => {
   }
   
   try {
-    db.updateBin(code.toUpperCase(), content, ownerToken);
+    await db.updateBin(code.toUpperCase(), content, ownerToken);
     
     // Notify all other clients in the bin room that content has changed
     io.to(`bin:${bin.code}`).emit('bin-updated', { content });
@@ -91,11 +91,11 @@ app.put('/api/bins/:code', (req, res) => {
 });
 
 // Delete a bin (Owner only)
-app.delete('/api/bins/:code', (req, res) => {
+app.delete('/api/bins/:code', async (req, res) => {
   const { code } = req.params;
   const ownerToken = req.headers['owner-token'];
   
-  const bin = db.getBin(code.toUpperCase());
+  const bin = await db.getBin(code.toUpperCase());
   if (!bin) {
     return res.status(404).json({ error: 'Bin not found or expired' });
   }
@@ -105,7 +105,7 @@ app.delete('/api/bins/:code', (req, res) => {
   }
   
   try {
-    db.deleteBin(code.toUpperCase(), ownerToken);
+    await db.deleteBin(code.toUpperCase(), ownerToken);
     
     // Notify viewers that the bin was deleted
     io.to(`bin:${bin.code}`).emit('bin-deleted');
@@ -134,9 +134,9 @@ app.use((req, res) => {
 io.on('connection', (socket) => {
   console.log(`[Socket] Connected: ${socket.id}`);
   
-  socket.on('join-bin', ({ code, isOwner, ownerToken }) => {
+  socket.on('join-bin', async ({ code, isOwner, ownerToken }) => {
     const uppercaseCode = code.toUpperCase();
-    const bin = db.getBin(uppercaseCode);
+    const bin = await db.getBin(uppercaseCode);
     
     if (!bin) {
       socket.emit('error-msg', 'Bin not found');
@@ -150,16 +150,16 @@ io.on('connection', (socket) => {
     console.log(`[Socket] Socket ${socket.id} joined room bin:${uppercaseCode} (Owner: ${socket.isOwner})`);
     
     if (socket.isOwner) {
-      db.setOwnerStatus(uppercaseCode, true);
+      await db.setOwnerStatus(uppercaseCode, true);
       // Broadcast owner status update to room
       io.to(`bin:${uppercaseCode}`).emit('owner-status-updated', { ownerConnected: true });
     }
   });
   
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     console.log(`[Socket] Disconnected: ${socket.id}`);
     if (socket.binCode && socket.isOwner) {
-      db.setOwnerStatus(socket.binCode, false);
+      await db.setOwnerStatus(socket.binCode, false);
       console.log(`[Socket] Owner disconnected from bin ${socket.binCode}. Expiry timer started.`);
       // Broadcast owner status update to room
       io.to(`bin:${socket.binCode}`).emit('owner-status-updated', { ownerConnected: false });

@@ -1,45 +1,74 @@
 const { v4: uuidv4 } = require('uuid');
-const Database = require('better-sqlite3');
 const path = require('path');
-const fs = require('fs');
 
-// Ensure data directory exists if DB_PATH is specified inside a subdirectory
-const dbPath = process.env.DB_PATH || path.join(__dirname, 'binly.db');
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+const usePostgres = !!process.env.DATABASE_URL;
+
+let db; // SQLite connection
+let pool; // Postgres connection pool
+
+if (usePostgres) {
+  const { Pool } = require('pg');
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  
+  // Initialize table
+  pool.query(`
+    CREATE TABLE IF NOT EXISTS bins (
+      code TEXT PRIMARY KEY,
+      content TEXT,
+      owner_token TEXT,
+      created_at BIGINT,
+      last_activity BIGINT,
+      owner_connected INTEGER DEFAULT 1,
+      owner_disconnect_time BIGINT
+    )
+  `).catch(err => console.error('[Postgres] Table creation error:', err));
+} else {
+  const Database = require('better-sqlite3');
+  const fs = require('fs');
+  const dbPath = process.env.DB_PATH || path.join(__dirname, 'binly.db');
+  const dbDir = path.dirname(dbPath);
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+  db = new Database(dbPath);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS bins (
+      code TEXT PRIMARY KEY,
+      content TEXT,
+      ownerToken TEXT,
+      createdAt INTEGER,
+      lastActivity INTEGER,
+      ownerConnected INTEGER DEFAULT 1,
+      ownerDisconnectTime INTEGER
+    )
+  `);
 }
-
-// Initialize SQLite database
-const db = new Database(dbPath);
-
-// Create Bins table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS bins (
-    code TEXT PRIMARY KEY,
-    content TEXT,
-    ownerToken TEXT,
-    createdAt INTEGER,
-    lastActivity INTEGER,
-    ownerConnected INTEGER DEFAULT 1,
-    ownerDisconnectTime INTEGER
-  )
-`);
 
 // Helper to generate a unique 6-character code
 // Uses uppercase letters and numbers, excluding confusing ones: 0, O, 1, I
 const CHARS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-function generateUniqueCode() {
+async function generateUniqueCode() {
   let attempts = 0;
-  const stmt = db.prepare('SELECT 1 FROM bins WHERE code = ?');
   while (attempts < 1000) {
     let code = '';
     for (let i = 0; i < 6; i++) {
       const randomIndex = Math.floor(Math.random() * CHARS.length);
       code += CHARS[randomIndex];
     }
-    const row = stmt.get(code);
-    if (!row) {
+    
+    let exists;
+    if (usePostgres) {
+      const res = await pool.query('SELECT 1 FROM bins WHERE code = $1', [code]);
+      exists = res.rowCount > 0;
+    } else {
+      const row = db.prepare('SELECT 1 FROM bins WHERE code = ?').get(code);
+      exists = !!row;
+    }
+    
+    if (!exists) {
       return code;
     }
     attempts++;
@@ -47,20 +76,40 @@ function generateUniqueCode() {
   throw new Error('Failed to generate a unique bin code');
 }
 
+function mapRow(row) {
+  if (!row) return null;
+  return {
+    code: row.code,
+    content: row.content,
+    ownerToken: row.owner_token !== undefined ? row.owner_token : row.ownerToken,
+    createdAt: new Date(Number(row.created_at !== undefined ? row.created_at : row.createdAt)),
+    lastActivity: new Date(Number(row.last_activity !== undefined ? row.last_activity : row.lastActivity)),
+    ownerConnected: (row.owner_connected !== undefined ? row.owner_connected : row.ownerConnected) === 1,
+    ownerDisconnectTime: (row.owner_disconnect_time !== undefined ? row.owner_disconnect_time : row.ownerDisconnectTime) ? new Date(Number(row.owner_disconnect_time !== undefined ? row.owner_disconnect_time : row.ownerDisconnectTime)) : null
+  };
+}
+
 /**
  * Create a new bin
  * @param {string} content 
- * @returns {object} The created bin object
+ * @returns {Promise<object>} The created bin object
  */
-function createBin(content = '') {
-  const code = generateUniqueCode();
+async function createBin(content = '') {
+  const code = await generateUniqueCode();
   const ownerToken = uuidv4();
   const now = Date.now();
   
-  db.prepare(`
-    INSERT INTO bins (code, content, ownerToken, createdAt, lastActivity, ownerConnected, ownerDisconnectTime)
-    VALUES (?, ?, ?, ?, ?, 1, NULL)
-  `).run(code, content, ownerToken, now, now);
+  if (usePostgres) {
+    await pool.query(`
+      INSERT INTO bins (code, content, owner_token, created_at, last_activity, owner_connected, owner_disconnect_time)
+      VALUES ($1, $2, $3, $4, $5, 1, NULL)
+    `, [code, content, ownerToken, now, now]);
+  } else {
+    db.prepare(`
+      INSERT INTO bins (code, content, ownerToken, createdAt, lastActivity, ownerConnected, ownerDisconnectTime)
+      VALUES (?, ?, ?, ?, ?, 1, NULL)
+    `).run(code, content, ownerToken, now, now);
+  }
   
   return {
     code,
@@ -76,24 +125,28 @@ function createBin(content = '') {
 /**
  * Get a bin by its code
  * @param {string} code 
- * @returns {object|null} The bin or null
+ * @returns {Promise<object|null>} The bin or null
  */
-function getBin(code) {
-  const row = db.prepare('SELECT * FROM bins WHERE code = ?').get(code);
+async function getBin(code) {
+  let row;
+  const now = Date.now();
+  if (usePostgres) {
+    const res = await pool.query('SELECT * FROM bins WHERE code = $1', [code]);
+    row = res.rows[0];
+    if (row) {
+      await pool.query('UPDATE bins SET last_activity = $1 WHERE code = $2', [now, code]);
+    }
+  } else {
+    row = db.prepare('SELECT * FROM bins WHERE code = ?').get(code);
+    if (row) {
+      db.prepare('UPDATE bins SET lastActivity = ? WHERE code = ?').run(now, code);
+    }
+  }
+  
   if (row) {
-    const now = Date.now();
-    // Update last activity on access
-    db.prepare('UPDATE bins SET lastActivity = ? WHERE code = ?').run(now, code);
-    
-    return {
-      code: row.code,
-      content: row.content,
-      ownerToken: row.ownerToken,
-      createdAt: new Date(row.createdAt),
-      lastActivity: new Date(now),
-      ownerConnected: row.ownerConnected === 1,
-      ownerDisconnectTime: row.ownerDisconnectTime ? new Date(row.ownerDisconnectTime) : null
-    };
+    const mapped = mapRow(row);
+    mapped.lastActivity = new Date(now);
+    return mapped;
   }
   return null;
 }
@@ -103,16 +156,29 @@ function getBin(code) {
  * @param {string} code 
  * @param {string} content 
  * @param {string} ownerToken 
- * @returns {boolean} Success
+ * @returns {Promise<boolean>} Success
  */
-function updateBin(code, content, ownerToken) {
-  const row = db.prepare('SELECT ownerToken FROM bins WHERE code = ?').get(code);
-  if (!row) return false;
-  if (row.ownerToken !== ownerToken) {
+async function updateBin(code, content, ownerToken) {
+  let dbOwnerToken;
+  if (usePostgres) {
+    const res = await pool.query('SELECT owner_token FROM bins WHERE code = $1', [code]);
+    dbOwnerToken = res.rows[0]?.owner_token;
+  } else {
+    const row = db.prepare('SELECT ownerToken FROM bins WHERE code = ?').get(code);
+    dbOwnerToken = row?.ownerToken;
+  }
+  
+  if (!dbOwnerToken) return false;
+  if (dbOwnerToken !== ownerToken) {
     throw new Error('Unauthorized update request');
   }
+  
   const now = Date.now();
-  db.prepare('UPDATE bins SET content = ?, lastActivity = ? WHERE code = ?').run(content, now, code);
+  if (usePostgres) {
+    await pool.query('UPDATE bins SET content = $1, last_activity = $2 WHERE code = $3', [content, now, code]);
+  } else {
+    db.prepare('UPDATE bins SET content = ?, lastActivity = ? WHERE code = ?').run(content, now, code);
+  }
   return true;
 }
 
@@ -120,15 +186,28 @@ function updateBin(code, content, ownerToken) {
  * Delete a bin
  * @param {string} code 
  * @param {string} ownerToken 
- * @returns {boolean} Success
+ * @returns {Promise<boolean>} Success
  */
-function deleteBin(code, ownerToken) {
-  const row = db.prepare('SELECT ownerToken FROM bins WHERE code = ?').get(code);
-  if (!row) return false;
-  if (row.ownerToken !== ownerToken) {
+async function deleteBin(code, ownerToken) {
+  let dbOwnerToken;
+  if (usePostgres) {
+    const res = await pool.query('SELECT owner_token FROM bins WHERE code = $1', [code]);
+    dbOwnerToken = res.rows[0]?.owner_token;
+  } else {
+    const row = db.prepare('SELECT ownerToken FROM bins WHERE code = ?').get(code);
+    dbOwnerToken = row?.ownerToken;
+  }
+  
+  if (!dbOwnerToken) return false;
+  if (dbOwnerToken !== ownerToken) {
     throw new Error('Unauthorized delete request');
   }
-  db.prepare('DELETE FROM bins WHERE code = ?').run(code);
+  
+  if (usePostgres) {
+    await pool.query('DELETE FROM bins WHERE code = $1', [code]);
+  } else {
+    db.prepare('DELETE FROM bins WHERE code = ?').run(code);
+  }
   return true;
 }
 
@@ -137,68 +216,111 @@ function deleteBin(code, ownerToken) {
  * @param {string} code 
  * @param {boolean} isConnected 
  */
-function setOwnerStatus(code, isConnected) {
+async function setOwnerStatus(code, isConnected) {
   const now = Date.now();
-  if (isConnected) {
-    db.prepare('UPDATE bins SET ownerConnected = 1, ownerDisconnectTime = NULL WHERE code = ?').run(code);
+  if (usePostgres) {
+    if (isConnected) {
+      await pool.query('UPDATE bins SET owner_connected = 1, owner_disconnect_time = NULL WHERE code = $1', [code]);
+    } else {
+      await pool.query('UPDATE bins SET owner_connected = 0, owner_disconnect_time = $1 WHERE code = $2', [now, code]);
+    }
   } else {
-    db.prepare('UPDATE bins SET ownerConnected = 0, ownerDisconnectTime = ? WHERE code = ?').run(now, code);
+    if (isConnected) {
+      db.prepare('UPDATE bins SET ownerConnected = 1, ownerDisconnectTime = NULL WHERE code = ?').run(code);
+    } else {
+      db.prepare('UPDATE bins SET ownerConnected = 0, ownerDisconnectTime = ? WHERE code = ?').run(now, code);
+    }
   }
 }
 
 // Background cleanup job for expired bins
 // Checks every 10 seconds
-setInterval(() => {
+setInterval(async () => {
   const now = Date.now();
-  
-  // Rule 1: Owner leaves for 15 minutes (900000 ms)
   const fifteenMinsAgo = now - 15 * 60 * 1000;
-  const expiredOwners = db.prepare(`
-    SELECT code FROM bins 
-    WHERE ownerConnected = 0 
-      AND ownerDisconnectTime IS NOT NULL 
-      AND ownerDisconnectTime < ?
-  `).all(fifteenMinsAgo);
-  
-  for (const row of expiredOwners) {
-    console.log(`[Expiry] Bin ${row.code} deleted because owner was disconnected for > 15 mins.`);
-    db.prepare('DELETE FROM bins WHERE code = ?').run(row.code);
-  }
-  
-  // Rule 2: No activity for 1 hour (3600000 ms)
   const oneHourAgo = now - 60 * 60 * 1000;
-  const expiredIdle = db.prepare(`
-    SELECT code FROM bins 
-    WHERE lastActivity < ?
-  `).all(oneHourAgo);
   
-  for (const row of expiredIdle) {
-    console.log(`[Expiry] Bin ${row.code} deleted due to inactivity for > 1 hour.`);
-    db.prepare('DELETE FROM bins WHERE code = ?').run(row.code);
+  if (usePostgres) {
+    try {
+      // 1. Owner disconnected for > 15 minutes
+      const res1 = await pool.query(`
+        SELECT code FROM bins 
+        WHERE owner_connected = 0 
+          AND owner_disconnect_time IS NOT NULL 
+          AND owner_disconnect_time < $1
+      `, [fifteenMinsAgo]);
+      
+      for (const row of res1.rows) {
+        console.log(`[Expiry] Bin ${row.code} deleted because owner was disconnected for > 15 mins.`);
+        await pool.query('DELETE FROM bins WHERE code = $1', [row.code]);
+      }
+      
+      // 2. No activity for 1 hour
+      const res2 = await pool.query(`
+        SELECT code FROM bins 
+        WHERE last_activity < $1
+      `, [oneHourAgo]);
+      
+      for (const row of res2.rows) {
+        console.log(`[Expiry] Bin ${row.code} deleted due to inactivity for > 1 hour.`);
+        await pool.query('DELETE FROM bins WHERE code = $1', [row.code]);
+      }
+    } catch (err) {
+      console.error('[Postgres] Expiry check error:', err);
+    }
+  } else {
+    // SQLite Cleanups
+    const expiredOwners = db.prepare(`
+      SELECT code FROM bins 
+      WHERE ownerConnected = 0 
+        AND ownerDisconnectTime IS NOT NULL 
+        AND ownerDisconnectTime < ?
+    `).all(fifteenMinsAgo);
+    
+    for (const row of expiredOwners) {
+      console.log(`[Expiry] Bin ${row.code} deleted because owner was disconnected for > 15 mins.`);
+      db.prepare('DELETE FROM bins WHERE code = ?').run(row.code);
+    }
+    
+    const expiredIdle = db.prepare(`
+      SELECT code FROM bins 
+      WHERE lastActivity < ?
+    `).all(oneHourAgo);
+    
+    for (const row of expiredIdle) {
+      console.log(`[Expiry] Bin ${row.code} deleted due to inactivity for > 1 hour.`);
+      db.prepare('DELETE FROM bins WHERE code = ?').run(row.code);
+    }
   }
 }, 10000);
 
 // Mock bins Map export for debugging/compatibility purposes
 const bins = {
-  has(code) {
-    const row = db.prepare('SELECT 1 FROM bins WHERE code = ?').get(code);
-    return !!row;
+  async has(code) {
+    if (usePostgres) {
+      const res = await pool.query('SELECT 1 FROM bins WHERE code = $1', [code]);
+      return res.rowCount > 0;
+    } else {
+      const row = db.prepare('SELECT 1 FROM bins WHERE code = ?').get(code);
+      return !!row;
+    }
   },
-  get(code) {
-    const row = db.prepare('SELECT * FROM bins WHERE code = ?').get(code);
-    if (!row) return null;
-    return {
-      code: row.code,
-      content: row.content,
-      ownerToken: row.ownerToken,
-      createdAt: new Date(row.createdAt),
-      lastActivity: new Date(row.lastActivity),
-      ownerConnected: row.ownerConnected === 1,
-      ownerDisconnectTime: row.ownerDisconnectTime ? new Date(row.ownerDisconnectTime) : null
-    };
+  async get(code) {
+    let row;
+    if (usePostgres) {
+      const res = await pool.query('SELECT * FROM bins WHERE code = $1', [code]);
+      row = res.rows[0];
+    } else {
+      row = db.prepare('SELECT * FROM bins WHERE code = ?').get(code);
+    }
+    return mapRow(row);
   },
-  delete(code) {
-    db.prepare('DELETE FROM bins WHERE code = ?').run(code);
+  async delete(code) {
+    if (usePostgres) {
+      await pool.query('DELETE FROM bins WHERE code = $1', [code]);
+    } else {
+      db.prepare('DELETE FROM bins WHERE code = ?').run(code);
+    }
   }
 };
 
