@@ -1,0 +1,11 @@
+node_modules
+binly.db
+binly.db-journal
+npm-debug.log
+.git
+.gitignore
+.dockerignore
+.agents
+walkthrough.md
+.DS_Store
+*.log

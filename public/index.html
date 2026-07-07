@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Binly - Instant Code Share</title>
+  <!-- Google Fonts: Share Tech Mono, Inter, Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/style.css">
+  <!-- FontAwesome for mockup icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Background decorations -->
+  <div class="bg-decorations">
+    <div class="decor-circle circle-1"></div>
+    <div class="decor-circle circle-2"></div>
+    <div class="decor-grid"></div>
+    <div class="bottom-dot-design">
+      <svg viewBox="0 0 1440 200" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <defs>
+          <pattern id="thick-dots-1" width="16" height="16" patternUnits="userSpaceOnUse">
+            <circle cx="8" cy="8" r="2.5" fill="#1f2328" opacity="0.07" />
+          </pattern>
+          <pattern id="thick-dots-2" width="22" height="22" patternUnits="userSpaceOnUse">
+            <circle cx="11" cy="11" r="3.5" fill="#1f2328" opacity="0.12" />
+          </pattern>
+        </defs>
+        <!-- Dotted waves representing landscape contours -->
+        <path d="M0,96 C240,160 480,32 720,96 C960,160 1200,96 1440,64 L1440,200 L0,200 Z" fill="url(#thick-dots-1)" />
+        <path d="M0,128 C360,64 720,192 1080,128 C1260,96 1380,128 1440,144 L1440,200 L0,200 Z" fill="url(#thick-dots-2)" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- Global Header Bar across all pages -->
+  <header class="global-header">
+    <div class="logo-wrapper" id="logo-home" title="Go to Home" style="cursor: pointer;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 60" width="140" height="40">
+        <g transform="translate(6, 10)">
+          <!-- Solid Black Drop Shadow -->
+          <path d="M 4 10 L 32 10 L 28 38 L 8 38 Z" fill="#000" transform="translate(3, 3)"/>
+          <rect x="-2" y="-2" width="40" height="8" fill="#000" rx="1" transform="translate(3, 3)"/>
+          <!-- Bin Body -->
+          <path d="M 4 10 L 32 10 L 28 38 L 8 38 Z" fill="#FFFFFF" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Bin Lid -->
+          <rect x="-2" y="-2" width="40" height="8" fill="#c5b3e6" stroke="#000" stroke-width="2.5" rx="1"/>
+          <!-- Code Brackets -->
+          <path d="M 12 18 L 8 24 L 12 30 M 24 18 L 28 24 L 24 30" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <!-- Text Group -->
+        <g transform="translate(62, 42)">
+          <text x="0" y="0" font-family="'Share Tech Mono', monospace" font-weight="700" font-size="36" fill="#7A9CFF" stroke="#000" stroke-width="1.5" letter-spacing="-1">BINLY</text>
+        </g>
+      </svg>
+    </div>
+    <div class="header-right-actions">
+      <div class="user-avatar">U</div>
+      <div class="info-btn" id="info-btn-dialog" title="About Binly"><i class="fa-solid fa-circle-info"></i></div>
+    </div>
+  </header>
+
+  <main id="app-container">
+    <!-- VIEW 1: LANDING PAGE -->
+    <section id="view-landing" class="app-view active">
+      <div class="landing-content">
+        <div class="landing-badge">
+          Universal Clipboard &bull; Works Without Login &bull; Auto Deletes
+        </div>
+        
+        <div class="landing-actions">
+          <button id="btn-create-bin" class="btn btn-primary btn-large">Create Bin</button>
+          
+          <div class="divider-vertical"></div>
+          
+          <div class="join-container">
+            <label for="join-code-input" class="join-label">Join Bin</label>
+            <div class="join-input-wrapper">
+              <input type="text" id="join-code-input" placeholder="Enter 6-digit code" maxlength="6" autocomplete="off" />
+              <button id="btn-join-bin" class="btn-arrow"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
+        </div>
+        
+        <p class="landing-footer">No login. Auto-deletes.</p>
+        
+        <!-- Sparkle Decoration -->
+        <div class="sparkle-icon"><i class="fa-solid fa-sparkles fa-xl"></i></div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: OWNER VIEW (Light Theme UI) -->
+    <section id="view-owner" class="app-view">
+      <div class="owner-content">
+        <div class="bin-code-container">
+          <div class="bin-code-label">Bin Code</div>
+          <div class="bin-code-row">
+            <div id="owner-bin-code" class="bin-code-large">------</div>
+            <button class="btn-share" id="btn-share-owner" title="Share Bin Link">
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="status-badge" id="owner-status-badge">
+          Status: Owned by you. Expires in 1h / 15m idle.
+        </div>
+        
+        <!-- Editor Card -->
+        <div class="editor-card">
+          <div class="editor-header">
+            <span class="editor-title">Bin Content (Editable)</span>
+            <button class="btn-copy-editor" id="btn-copy-owner" title="Copy Content">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+          <div class="editor-body">
+            <div class="editor-wrapper">
+              <div class="editor-gutter" id="owner-editor-gutter">1</div>
+              <textarea id="owner-editor" placeholder="Paste text or code here (Auto-saves)" spellcheck="false"></textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="owner-actions">
+          <button id="btn-update-bin" class="btn btn-blue">Update Bin</button>
+          <button id="btn-delete-bin" class="btn btn-red">Delete Bin</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: VIEWER VIEW (Dark Theme UI) -->
+    <section id="view-viewer" class="app-view">
+      <!-- Sparkle Decoration -->
+      <div class="sparkle-icon viewer-sparkle"><i class="fa-solid fa-sparkles fa-xl"></i></div>
+
+      <div class="viewer-content">
+        <div class="bin-code-container">
+          <div class="bin-code-label">Bin Code</div>
+          <div class="bin-code-row">
+            <div id="viewer-bin-code" class="bin-code-large">------</div>
+            <button class="btn-share" id="btn-share-viewer" title="Share Bin Link">
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+          </div>
+        </div>
+        <p class="viewer-subtitle" id="viewer-status-badge">Viewer View. Expires 1 hour from now, or 15 mins idle.</p>
+        
+        <div class="viewer-layout">
+          <!-- Main editor content card -->
+          <div class="editor-card">
+            <div class="editor-header">
+              <span class="editor-title">Bin Content (Read-only)</span>
+            </div>
+            <div class="editor-body no-gutter">
+              <textarea id="viewer-editor" placeholder="Empty bin..." readonly spellcheck="false"></textarea>
+            </div>
+          </div>
+          
+          <!-- Side action column -->
+          <div class="viewer-side-col">
+            <button id="btn-copy-viewer" class="btn btn-primary btn-block">Copy Content</button>
+            <p class="viewer-side-info">Viewer Mode. Content is read-only. This bin expires soon.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: ERROR / EXPIRED PAGE -->
+    <section id="view-error" class="app-view">
+      <div class="error-content">
+        <div class="error-icon"><i class="fa-solid fa-circle-exclamation fa-3x"></i></div>
+        <h2 class="error-title">Bin Not Found or Expired</h2>
+        <p class="error-message">The 6-character code you entered does not exist, has expired, or was deleted.</p>
+        <button id="btn-error-home" class="btn btn-primary">Go to Landing Page</button>
+      </div>
+    </section>
+
+    <!-- Custom Delete Confirmation Dialog -->
+    <dialog id="delete-confirm-dialog" class="custom-dialog">
+      <div class="dialog-content">
+        <div class="dialog-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3 class="dialog-title">Delete Bin permanently?</h3>
+        <p class="dialog-message">Are you sure you want to delete this bin permanently? This action cannot be undone.</p>
+        <div class="dialog-actions">
+          <button id="btn-confirm-delete-cancel" class="btn btn-dialog-cancel">Cancel</button>
+          <button id="btn-confirm-delete-ok" class="btn btn-dialog-ok">Delete</button>
+        </div>
+      </div>
+    </dialog>
+  </main>
+
+  <!-- Dynamic Toast System -->
+  <div id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

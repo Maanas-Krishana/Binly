@@ -1,0 +1,1008 @@
+/* ==========================================================================
+   Binly Design System - Playful Neo-Brutalist Light Mode UI
+   ========================================================================== */
+:root {
+  /* Common Fonts */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Fira Code', source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  --font-brutalist: 'Share Tech Mono', monospace;
+  
+  /* Quick snappy transitions for crisp brutalist hover states */
+  --transition-fast: 0.08s ease;
+  --transition-normal: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 50px;
+  
+  /* Playful UI Theme Colors */
+  --bg-main: #fcfaf6;            /* Warm off-white page background */
+  --bg-card: #ffffff;            /* Card backgrounds */
+  --border-color: #1f2328;       /* Strong black border outline */
+  --text-primary: #1f2328;       /* Dark charcoal text */
+  --text-secondary: #57606a;     /* Muted text */
+  
+  /* Vibrant Pastel Palette */
+  --accent-purple: #c5b3e6;      /* Pastel Purple */
+  --accent-yellow: #c5b3e6;      /* Unified Lilac Accent */
+  --accent-yellow-hover: #b29fd4;
+  --accent-blue: #5c86ff;        /* Vibrant Royal Blue */
+  --accent-blue-hover: #456fd6;
+  --accent-red: #ff7675;         /* Coral Red */
+  --accent-red-hover: #eb5c5b;
+}
+
+/* ==========================================================================
+   Reset & Core Styling
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background mesh & shapes */
+.bg-decorations {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.decor-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.04;
+}
+
+.circle-1 {
+  top: -10%;
+  left: -10%;
+  width: 40vw;
+  height: 40vw;
+  background: radial-gradient(circle, var(--accent-purple) 0%, rgba(0,0,0,0) 70%);
+}
+
+.circle-2 {
+  bottom: -10%;
+  right: -10%;
+  width: 45vw;
+  height: 45vw;
+  background: radial-gradient(circle, var(--accent-blue) 0%, rgba(0,0,0,0) 70%);
+}
+
+/* Playful dot pattern grid matching Image 1 */
+.decor-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: 32px 32px;
+  background-image: radial-gradient(circle, rgba(31, 35, 40, 0.12) 2.5px, transparent 2.5px);
+  mask-image: radial-gradient(circle, black 60%, transparent 95%);
+  -webkit-mask-image: radial-gradient(circle, black 60%, transparent 95%);
+}
+
+/* Base App container */
+#app-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 20px 40px; /* offset top for header */
+}
+
+/* ==========================================================================
+   View Transitions / Active states
+   ========================================================================== */
+.app-view {
+  display: none;
+  width: 100%;
+  max-width: 1100px;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.app-view.active {
+  display: block;
+  animation: viewFadeIn var(--transition-slow) forwards;
+}
+
+@keyframes viewFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   Playful Button Styles (Thick border + offset shadow)
+   ========================================================================== */
+.btn {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 24px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  position: relative;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--accent-yellow);
+  color: var(--text-primary);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-yellow-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.btn-primary:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+.btn-large {
+  font-size: 18px;
+  padding: 14px 36px;
+  font-weight: 800;
+  border-radius: var(--radius-md);
+  box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.btn-large:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--border-color);
+}
+
+.btn-large:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px var(--border-color);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-blue {
+  background-color: var(--accent-blue);
+  color: #ffffff;
+  font-size: 15px;
+  padding: 12px 28px;
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.btn-blue:hover {
+  background-color: var(--accent-blue-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px var(--border-color);
+}
+
+.btn-blue:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+.btn-red {
+  background-color: var(--accent-red);
+  color: #ffffff;
+  font-size: 15px;
+  padding: 12px 28px;
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.btn-red:hover {
+  background-color: var(--accent-red-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px var(--border-color);
+}
+
+.btn-red:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+/* ==========================================================================
+   Global Header Bar
+   ========================================================================== */
+.global-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.global-header * {
+  pointer-events: auto;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  transition: transform var(--transition-fast);
+}
+
+.logo-wrapper:hover {
+  transform: scale(1.05) translate(1px, -1px);
+}
+
+.header-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: var(--accent-purple);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid var(--border-color);
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform var(--transition-fast);
+}
+
+.user-avatar:hover {
+  transform: translateY(-1px);
+}
+
+.info-btn {
+  font-size: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.info-btn:hover {
+  transform: scale(1.15) rotate(5deg);
+}
+
+/* ==========================================================================
+   VIEW 1: LANDING PAGE
+   ========================================================================== */
+#view-landing {
+  max-width: 750px;
+}
+
+.landing-content {
+  text-align: center;
+  position: relative;
+  padding: 40px;
+}
+
+.landing-title {
+  font-size: 38px;
+  font-weight: 800;
+  margin-bottom: 40px;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.landing-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  padding: 40px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 25px;
+  box-shadow: 6px 6px 0px var(--border-color);
+}
+
+.divider-vertical {
+  width: 2px;
+  height: 80px;
+  background-color: var(--border-color);
+  margin: 0 45px;
+}
+
+.join-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.join-label {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.join-input-wrapper {
+  display: flex;
+  background: #ffffff;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 3px 3px 0px var(--border-color);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.join-input-wrapper:focus-within {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-color);
+}
+
+#join-code-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 14px;
+  width: 170px;
+  outline: none;
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+
+#join-code-input::placeholder {
+  font-family: var(--font-ui);
+  letter-spacing: 0;
+  font-weight: 500;
+  color: #adb5bd;
+}
+
+.btn-arrow {
+  background: var(--accent-yellow);
+  border: none;
+  border-left: 2px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0 16px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.btn-arrow:hover {
+  background: var(--accent-yellow-hover);
+}
+
+.landing-footer {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 15px;
+}
+
+/* Sparkle icon style & pulse animation */
+.sparkle-icon {
+  position: absolute;
+  bottom: 0px;
+  right: -20px;
+  color: rgba(31, 35, 40, 0.15);
+  animation: sparklePulse 3s infinite ease-in-out;
+}
+
+@keyframes sparklePulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.15) rotate(15deg);
+    opacity: 0.85;
+  }
+}
+
+/* ==========================================================================
+   VIEW 2: OWNER & VIEWER VIEWS
+   ========================================================================== */
+#view-owner, #view-viewer {
+  max-width: 900px;
+  position: relative;
+}
+
+.owner-content, .viewer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.view-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  letter-spacing: -0.2px;
+}
+
+.bin-code-large {
+  font-family: var(--font-mono);
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 0; /* Align perfectly inside flex container */
+  line-height: 1; /* Crisp vertical alignment */
+  color: var(--accent-blue);
+  text-shadow: 2px 2px 0px var(--border-color);
+}
+
+/* Status Badge capsule */
+.status-badge, .viewer-subtitle {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 18px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 30px;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+/* Shared Editor Card Component (Thick outline + offset shadow) */
+.editor-card {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 6px 6px 0px var(--border-color);
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 2px solid var(--border-color);
+  background-color: #ffffff;
+}
+
+.editor-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.btn-copy-editor {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-copy-editor:hover {
+  background-color: #f0f2f5;
+  color: var(--text-primary);
+}
+
+/* Double-column Textarea layout for line numbering */
+.editor-body {
+  padding: 0;
+  background-color: #ffffff; /* pure white editor background */
+}
+
+.editor-wrapper {
+  display: flex;
+  position: relative;
+  min-height: 250px;
+  max-height: 450px;
+}
+
+.editor-gutter {
+  width: 48px;
+  background-color: #f8f9fa;
+  border-right: 2px solid var(--border-color);
+  padding: 15px 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: #adb5bd;
+  text-align: right;
+  padding-right: 12px;
+  user-select: none;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+.editor-gutter span {
+  display: block;
+}
+
+#owner-editor, #viewer-editor {
+  flex: 1;
+  background-color: #ffffff;
+  border: none;
+  padding: 15px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  resize: vertical;
+  outline: none;
+  min-height: 250px;
+  max-height: 450px;
+  overflow-y: auto;
+}
+
+#viewer-editor {
+  width: 100%;
+}
+
+#owner-editor::placeholder {
+  color: #adb5bd;
+}
+
+/* Actions Row */
+.owner-actions {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 40px;
+}
+
+
+
+/* ==========================================================================
+   VIEWER VIEW SPECIFICS
+   ========================================================================== */
+.viewer-sparkle {
+  bottom: 30px;
+  right: 20px;
+  color: rgba(0,0,0,0.1);
+}
+
+.viewer-layout {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 30px;
+  align-items: start;
+  width: 100%;
+}
+
+.viewer-side-col {
+  padding-top: 48px; /* align with editor text start (bypassing header height) */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.viewer-side-info {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   VIEW 4: ERROR VIEW
+   ========================================================================== */
+#view-error {
+  max-width: 500px;
+}
+
+.error-content {
+  text-align: center;
+  background-color: var(--bg-card);
+  border: 2px solid var(--border-color);
+  padding: 40px 30px;
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 6px 0px var(--border-color);
+}
+
+.error-icon {
+  color: var(--accent-red);
+  margin-bottom: 20px;
+}
+
+.error-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.error-message {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   Custom Native Modal dialog
+   ========================================================================== */
+.custom-dialog {
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 0;
+  background: transparent;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 8px 8px 0px var(--border-color);
+  border: 3px solid var(--border-color);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  overflow: visible;
+}
+
+.custom-dialog[open] {
+  animation: dialogShow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes dialogShow {
+  from {
+    transform: translate(-50%, -45%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+.custom-dialog::backdrop {
+  background: rgba(31, 35, 40, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.dialog-content {
+  background-color: var(--bg-card);
+  border: none;
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.dialog-icon {
+  color: var(--accent-red);
+  font-size: 38px;
+  margin-bottom: 18px;
+}
+
+.dialog-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: -0.2px;
+}
+
+.dialog-message {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn-dialog-cancel {
+  background-color: #ffffff;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.btn-dialog-cancel:hover {
+  background-color: #f0f2f5;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.btn-dialog-cancel:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+.btn-dialog-ok {
+  background-color: var(--accent-red);
+  color: #ffffff;
+  border: 2px solid var(--border-color);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.btn-dialog-ok:hover {
+  background-color: var(--accent-red-hover);
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--border-color);
+}
+
+.btn-dialog-ok:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+/* ==========================================================================
+   Toast Notification Styling
+   ========================================================================== */
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toast {
+  background-color: #ffffff;
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 4px 4px 0px var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(100px);
+  opacity: 0;
+  animation: toastSlideIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.toast.removing {
+  animation: none;
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+@keyframes toastSlideIn {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-success i {
+  color: #4caf50;
+}
+
+.toast-info i {
+  color: var(--accent-blue);
+}
+
+.toast-error i {
+  color: var(--accent-red);
+}
+
+/* ==========================================================================
+   Responsive Adaptation
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Global header padding */
+  .global-header {
+    padding: 0 20px;
+  }
+
+  /* Landing page adjustments */
+  .landing-actions {
+    flex-direction: column;
+    padding: 30px 20px;
+  }
+  
+  .divider-vertical {
+    width: 80%;
+    height: 2px;
+    margin: 30px 0;
+  }
+  
+  .join-container {
+    align-items: center;
+    width: 100%;
+  }
+  
+  .join-input-wrapper {
+    width: 100%;
+    max-width: 280px;
+  }
+  
+  #join-code-input {
+    width: 100%;
+  }
+  
+  /* Viewer View adjustment */
+  .viewer-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .viewer-side-col {
+    padding-top: 0;
+  }
+  
+
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(31, 35, 40, 0.25);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(31, 35, 40, 0.45);
+}
+
+/* Bottom Dotted Wave Silhouette Design */
+.bottom-dot-design {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -5px; /* slight overflow hide */
+  height: 180px;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.bottom-dot-design svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Bin Code Label & Share Row Styles */
+.bin-code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.bin-code-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.bin-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn-share {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--accent-purple);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  font-size: 16px;
+  outline: none;
+}
+
+.btn-share:hover {
+  transform: translateY(-50%) translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.btn-share:active {
+  transform: translateY(-50%) translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
+/* Playful Neo-Brutalist Filled Landing Badge */
+.landing-badge {
+  display: inline-block;
+  background-color: var(--accent-yellow);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  padding: 12px 28px;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 4px 4px 0px var(--border-color);
+  margin-bottom: 40px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  cursor: default;
+}
+
+.landing-badge:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0px var(--border-color);
+}
+
+/* ==========================================================================
+   Typography Overrides - Playful Monospaced Block Font (Share Tech Mono)
+   ========================================================================== */
+.btn,
+.landing-title,
+.view-title,
+.status-badge,
+.viewer-subtitle,
+.editor-title,
+.join-label,
+.dialog-title,
+.toast,
+.bin-code-label,
+.landing-badge {
+  font-family: var(--font-brutalist) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px;
+}

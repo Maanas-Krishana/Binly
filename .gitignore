@@ -1,0 +1,7 @@
+node_modules
+binly.db
+binly.db-journal
+*.log
+.DS_Store
+.agents
+.gemini
