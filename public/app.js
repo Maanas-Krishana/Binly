@@ -75,6 +75,15 @@ function showToast(message, type = 'info') {
 /* ==========================================================================
    Router / Navigation Logic
    ========================================================================== */
+function showErrorView(title, message) {
+  Object.values(views).forEach(view => view.classList.remove('active'));
+  const titleEl = document.getElementById('error-view-title');
+  const messageEl = document.getElementById('error-view-message');
+  if (titleEl) titleEl.textContent = title;
+  if (messageEl) messageEl.textContent = message;
+  views.error.classList.add('active');
+}
+
 function navigateTo(path) {
   window.history.pushState(null, '', path);
   handleRouting();
@@ -110,7 +119,7 @@ async function handleRouting() {
       views.landing.classList.add('active');
     } else {
       // Invalid URL structure -> show error
-      views.error.classList.add('active');
+      showErrorView('Bin Not Found or Expired', 'The 6-character code you entered does not exist, has expired, or was deleted.');
     }
   } else {
     // We have a 6-character code
@@ -148,7 +157,7 @@ async function handleRouting() {
 
     } catch (error) {
       console.error(error);
-      views.error.classList.add('active');
+      showErrorView('Bin Not Found or Expired', 'The 6-character code you entered does not exist, has expired, or was deleted.');
     }
   }
 }
@@ -190,8 +199,7 @@ function setupSocket(code, isOwner, ownerToken) {
   // Listen for bin deletion (Viewer Only)
   socket.on('bin-deleted', () => {
     if (!isOwner) {
-      alert('This bin has been deleted by the owner.');
-      navigateTo('/');
+      showErrorView('Bin Deleted', 'This bin has been deleted by the owner.');
     }
   });
 
