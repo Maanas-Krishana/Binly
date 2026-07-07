@@ -500,6 +500,8 @@ body {
   padding: 14px 20px;
   border-bottom: 2px solid var(--border-color);
   background-color: #ffffff;
+  flex-wrap: wrap; /* prevents collisions by wrapping items on narrow screens */
+  gap: 12px;
 }
 
 .editor-title {
@@ -675,11 +677,6 @@ body {
 }
 
 /* Editor Header Connections & Save Status elements */
-.editor-title-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
 .editor-header-actions {
   display: flex;
