@@ -17,6 +17,11 @@ const io = socketIo(server, {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Health check / Keep-alive endpoint
+app.get('/ping', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // API Routes
 
 // Create a new bin
