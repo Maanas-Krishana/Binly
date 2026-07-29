@@ -12,4 +12,4 @@ jobs:
     steps:
       - name: Ping Render
         run: |
-          curl -s https://your-render-app.onrender.com/ping > /dev/null
+          curl -s https://binly-73gv.onrender.com/ping > /dev/null
