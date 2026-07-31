@@ -37,6 +37,8 @@
   <link rel="stylesheet" href="/style.css">
   <!-- FontAwesome for mockup icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -128,6 +130,9 @@
               <span id="owner-bin-code" class="meta-code">------</span>
             </div>
             <div class="meta-actions">
+              <button class="btn-meta-action" id="btn-qr-owner" title="Show QR Code">
+                <i class="fa-solid fa-qrcode"></i> QR
+              </button>
               <button class="btn-meta-action" id="btn-share-owner" title="Share Bin Link">
                 <i class="fa-solid fa-share-nodes"></i> Share
               </button>
@@ -192,6 +197,9 @@
               <span id="viewer-bin-code" class="meta-code">------</span>
             </div>
             <div class="meta-actions">
+              <button class="btn-meta-action" id="btn-qr-viewer" title="Show QR Code">
+                <i class="fa-solid fa-qrcode"></i> QR
+              </button>
               <button class="btn-meta-action" id="btn-share-viewer" title="Share Bin Link">
                 <i class="fa-solid fa-share-nodes"></i> Share
               </button>
@@ -253,6 +261,20 @@
           <button id="btn-confirm-delete-cancel" class="btn btn-dialog-cancel">Cancel</button>
           <button id="btn-confirm-delete-ok" class="btn btn-dialog-ok">Delete</button>
         </div>
+      </div>
+    </dialog>
+
+    <!-- Custom QR Code Modal -->
+    <dialog id="qr-modal-dialog" class="custom-dialog qr-dialog">
+      <div class="dialog-content qr-dialog-content">
+        <div class="qr-dialog-header">
+          <h3 class="qr-dialog-title">Scan to Join Bin</h3>
+          <button class="qr-close-btn" id="btn-qr-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="qr-code-wrapper">
+          <div id="qr-code-canvas-container"></div>
+        </div>
+        <p class="qr-dialog-hint">Scan with your phone camera to open this bin instantly.</p>
       </div>
     </dialog>
   </main>
