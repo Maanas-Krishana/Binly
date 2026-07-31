@@ -492,6 +492,12 @@ body {
   flex-direction: column;
   background-color: var(--bg-card);
   border: 2px solid var(--border-color);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.editor-card.drag-over {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 4px rgba(122, 156, 255, 0.25), 6px 6px 0px var(--border-color) !important;
 }
 
 .editor-header {

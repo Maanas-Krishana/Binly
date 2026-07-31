@@ -150,6 +150,13 @@
                 <span class="status-indicator live"></span> Live
               </span>
               <span class="save-status-text" id="owner-save-status">Saved</span>
+              <input type="file" id="owner-file-input" style="display: none;" accept=".txt,.js,.py,.html,.css,.json,.md,.cpp,.c,.java,.ts,.json,.csv" />
+              <button class="btn-copy-editor" id="btn-upload-owner" title="Upload / Drag & Drop File">
+                <i class="fa-solid fa-file-arrow-up"></i> Upload
+              </button>
+              <button class="btn-copy-editor" id="btn-download-owner" title="Download Snippet File">
+                <i class="fa-solid fa-file-arrow-down"></i> Download
+              </button>
               <button class="btn-copy-editor" id="btn-copy-owner" title="Copy Content">
                 <i class="fa-regular fa-copy"></i>
               </button>
@@ -207,6 +214,9 @@
                 <span class="status-indicator live"></span> Live
               </span>
               <span class="save-status-text" id="viewer-save-status">Synced</span>
+              <button class="btn-copy-editor" id="btn-download-viewer" title="Download Snippet File">
+                <i class="fa-solid fa-file-arrow-down"></i> Download
+              </button>
             </div>
           </div>
           <div class="editor-body no-gutter">
