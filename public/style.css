@@ -1186,6 +1186,7 @@ body {
    QR Code Modal Styling (Right-Side Drawer Panel)
    ========================================================================== */
 .custom-dialog.qr-dialog {
+  position: fixed !important;
   top: 0 !important;
   bottom: 0 !important;
   left: auto !important;
@@ -1194,7 +1195,7 @@ body {
   max-height: 100vh !important;
   width: 380px !important;
   max-width: 90vw !important;
-  margin: 0 !important;
+  margin: 0 0 0 auto !important;
   border-radius: 0 !important;
   border-left: 3px solid var(--border-color) !important;
   border-top: none !important;
@@ -1202,12 +1203,15 @@ body {
   border-bottom: none !important;
   box-shadow: -8px 0px 24px rgba(0, 0, 0, 0.2) !important;
   background-color: var(--bg-card) !important;
-  transform: translateX(100%) !important;
+  z-index: 10000 !important;
+  transform: translateX(100%);
 }
 
 .custom-dialog.qr-dialog[open] {
+  display: block !important;
   animation: qrSlideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
+
 
 @keyframes qrSlideInFromRight {
   from {
