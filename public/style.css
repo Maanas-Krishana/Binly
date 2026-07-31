@@ -1183,23 +1183,62 @@ body {
 }
 
 /* ==========================================================================
-   QR Code Modal Styling
+   QR Code Modal Styling (Right-Side Drawer Panel)
    ========================================================================== */
+.custom-dialog.qr-dialog {
+  top: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  right: 0 !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  width: 380px !important;
+  max-width: 90vw !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border-left: 3px solid var(--border-color) !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  box-shadow: -8px 0px 24px rgba(0, 0, 0, 0.2) !important;
+  background-color: var(--bg-card) !important;
+  transform: translateX(100%) !important;
+}
+
+.custom-dialog.qr-dialog[open] {
+  animation: qrSlideInFromRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes qrSlideInFromRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 .qr-dialog-content {
   text-align: center;
-  max-width: 360px;
-  padding: 24px;
+  height: 100%;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .qr-dialog-header {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .qr-dialog-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 800;
   margin: 0;
   color: var(--text-primary);
@@ -1207,29 +1246,40 @@ body {
 
 .qr-close-btn {
   background: transparent;
-  border: none;
-  font-size: 20px;
+  border: 2px solid var(--border-color);
+  font-size: 18px;
   cursor: pointer;
-  color: var(--text-secondary);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--transition-fast);
+  color: var(--text-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .qr-close-btn:hover {
-  background-color: #e1e4e8;
-  color: var(--text-primary);
+  background-color: #f0f2f5;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.qr-close-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
 }
 
 .qr-code-wrapper {
   background: #ffffff;
-  padding: 20px;
-  border-radius: 24px;
+  padding: 24px;
+  border-radius: 28px;
   border: 3px solid var(--border-color);
-  box-shadow: 4px 4px 0px var(--border-color);
+  box-shadow: 6px 6px 0px var(--border-color);
   display: inline-block;
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 #qr-code-canvas-container {
@@ -1250,8 +1300,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   background-color: #ffffff;
   border: 3px solid #0d1117;
   border-radius: 50%;
@@ -1263,8 +1313,11 @@ body {
 }
 
 .qr-dialog-hint {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.5;
+  max-width: 260px;
 }
+
