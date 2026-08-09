@@ -33,10 +33,10 @@ export class MetaBlock {
     
     if (this.statusEl) {
       if (this.isOwner) {
-        this.statusEl.textContent = `Status: Owned by you. Expires in 1h / 15m idle.`;
+        this.statusEl.textContent = `Status: Owned by you. Expires after 15m idle or disconnect.`;
       } else {
         if (ownerConnected) {
-          this.statusEl.textContent = 'Viewer View. Expires 1 hour from now, or 15 mins idle.';
+          this.statusEl.textContent = 'Viewer View. Host is connected (expires after 15m idle).';
         } else {
           this.statusEl.textContent = 'Viewer View. Owner is offline (expires in 15 mins).';
         }

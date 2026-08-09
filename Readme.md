@@ -140,11 +140,7 @@ A bin is temporary.
 
 Destroy conditions:
 
-1. Owner leaves for 15 minutes
-
-or
-
-2. No activity for 1 hour
+Owner leaves or remains inactive for 15 minutes.
 
 ---
 
@@ -180,14 +176,47 @@ On the landing page, users can choose between standard text/code clipboards and 
 
 ---
 
-## Binly FTP Specifications & Rules
+## Core Binly FTP Feature Matrix
 
-* **File Size Limit**: Up to **100 MB** per bin.
-* **Supported File Types**: Any binary format including PDFs, PNGs/JPEGs, MP4/WebM videos, zip archives, and documents.
-* **Auto-Cleanup / Expiry**: FTP bins automatically expire and wipe hosted files after 1 hour or 15 minutes of host inactivity.
-* **Direct Browser Download & Preview**: Integrated in-browser previewer for images, videos, and PDFs with 1-click download.
+### 1. Zero-Friction Transfer Modes
+* **One-Click Web FTP**: Drag & drop or pick any file up to 100 MB directly in the browser.
+* **Terminal / CLI FTP (cURL & HTTP)**: Upload files straight from your terminal without opening a browser:
+  ```bash
+  # Upload via CLI
+  curl -F "file=@presentation.pdf" https://binly.app/api/ftp/upload
+  # Output: {"code":"F9K32X","expiresIn":"15m idle"}
+
+  # Download via CLI
+  curl -O https://binly.app/api/ftp/F9K32X/download
+  ```
+* **Instant QR Beam**: Generate dynamic QR codes for uploaded files so mobile devices can scan and download media instantly without typing codes.
 
 ---
+
+### 2. File Streaming & Native Preview Engine
+* **Instant Media Streaming**: Stream MP4, WebM, MP3, and WAV files directly inside the viewer modal before downloading.
+* **PDF & Document Reader**: Integrated in-browser renderer for PDFs, markdown files, and image assets (PNG, JPG, SVG, WebP, GIF).
+* **Archive Inspector**: Preview zip contents without unpacking to verify contents before downloading.
+
+---
+
+### 3. Security, Privacy & Control
+* **Burn-on-Read / Self-Destruct**: Host can toggle "Delete file after first download" for sensitive single-use transfers.
+* **Password / PIN Lock**: Host can set a 4-digit PIN for sensitive FTP bins.
+* **Granular Download Counter & Logs**: Real-time Socket.IO notification when a viewer starts downloading or finishes fetching the file.
+* **End-to-End Encryption (Optional)**: In-browser AES-256 client-side encryption before uploading, decrypting in recipient browser with explicit secret key.
+
+---
+
+### 4. Storage & Lifecycle Rules
+* **Strict Size Limit**: Up to **100 MB** per file/bin.
+* **Auto-Cleanup / Ephemeral Storage**: Files reside in high-speed ephemeral object storage / memory cache. Files auto-destruct after:
+  - 15 minutes of host disconnect or inactivity
+  - Explicit manual deletion by host
+* **Resumable & Chunked Uploads**: Reliable chunked upload pipeline for unstable mobile/wifi connections.
+
+---
+
 
 # Version 2 — Accounts and Private Bins
 
