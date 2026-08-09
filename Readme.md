@@ -140,11 +140,7 @@ A bin is temporary.
 
 Destroy conditions:
 
-1. Owner leaves for 15 minutes
-
-or
-
-2. No activity for 1 hour
+Owner leaves or remains inactive for 15 minutes.
 
 ---
 
@@ -188,7 +184,7 @@ On the landing page, users can choose between standard text/code clipboards and 
   ```bash
   # Upload via CLI
   curl -F "file=@presentation.pdf" https://binly.app/api/ftp/upload
-  # Output: {"code":"F9K32X","expiresIn":"1h"}
+  # Output: {"code":"F9K32X","expiresIn":"15m idle"}
 
   # Download via CLI
   curl -O https://binly.app/api/ftp/F9K32X/download
@@ -214,9 +210,8 @@ On the landing page, users can choose between standard text/code clipboards and 
 
 ### 4. Storage & Lifecycle Rules
 * **Strict Size Limit**: Up to **100 MB** per file/bin.
-* **Auto-Cleanup / Ephemeral Storage**: Files reside in high-speed ephemeral object storage / memory cache. Files auto-destruct on:
-  - 1 hour total lifetime
-  - 15 minutes of host disconnect
+* **Auto-Cleanup / Ephemeral Storage**: Files reside in high-speed ephemeral object storage / memory cache. Files auto-destruct after:
+  - 15 minutes of host disconnect or inactivity
   - Explicit manual deletion by host
 * **Resumable & Chunked Uploads**: Reliable chunked upload pipeline for unstable mobile/wifi connections.
 
