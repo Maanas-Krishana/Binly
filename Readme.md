@@ -148,6 +148,47 @@ or
 
 ---
 
+# Version 1.5 — Binly FTP as a Service (File Transfer Protocol)
+
+## Goal
+
+Extend Binly beyond text/code to zero-friction temporary file hosting and transfers up to 100 MB.
+
+No registration. No credentials. No complex FTP clients required.
+
+---
+
+## Try Binly FTP (Landing Page Section)
+
+On the landing page, users can choose between standard text/code clipboards and **Binly FTP**:
+
+1. **Host & Upload**: Simply drag & drop or upload any PDF, image, video, document, or binary asset **under 100 MB**.
+2. **Generate Code**: Binly automatically provisions a unique 6-digit bin access code (e.g. `F9K32X`).
+3. **Viewer Access & Download**: The receiver enters the 6-digit bin code on any device and instantly streams or downloads the hosted file.
+
+```
++--------------------------------------------------------+
+|                   TRY BINLY FTP                       |
+|                                                        |
+|  [ Upload File (PDF, Image, Video < 100MB) ]           |
+|                           ↓                            |
+|             Generated Bin Code: F9K32X                 |
+|                           ↓                            |
+|  Viewer enters code "F9K32X" ---> Downloads file       |
++--------------------------------------------------------+
+```
+
+---
+
+## Binly FTP Specifications & Rules
+
+* **File Size Limit**: Up to **100 MB** per bin.
+* **Supported File Types**: Any binary format including PDFs, PNGs/JPEGs, MP4/WebM videos, zip archives, and documents.
+* **Auto-Cleanup / Expiry**: FTP bins automatically expire and wipe hosted files after 1 hour or 15 minutes of host inactivity.
+* **Direct Browser Download & Preview**: Integrated in-browser previewer for images, videos, and PDFs with 1-click download.
+
+---
+
 # Version 2 — Accounts and Private Bins
 
 ## User Accounts
@@ -321,13 +362,24 @@ Rules:
 
 ---
 
+# Additional Features & Roadmap
+
+* **QR Code Quick Join**: Mobile scan-to-open for instant zero-type transfers across devices.
+* **File Upload & Drag-and-Drop**: Direct drop file uploads into bins for text, code, or FTP files.
+* **Live Socket Sync**: Real-time broadcast notification on content updates, owner disconnects, or bin deletions.
+* **Smart Line Gutter & Syntax Highlighting**: Auto line-numbering and formatting tailored for developer snippet sharing.
+* **PWA & Offline UI Capabilities**: Installable progressive web app experience for quick access.
+* **Binly FTP Storage**: High-speed ephemeral binary storage (< 100 MB) for media, docs, and archives.
+
+---
+
 # System Architecture
 
 Frontend:
 
-* React
-* Monaco Editor
-* Tailwind CSS
+* React / Modern HTML5 Vanilla JS UI
+* Monaco Editor / Custom Code Editor
+* Tailwind CSS / CSS3 Glassmorphism System
 
 Backend:
 
@@ -345,7 +397,7 @@ Collaboration:
 
 Temporary Storage:
 
-* Redis
+* Redis / SQLite ephemera
 
 Permanent Storage:
 
@@ -378,6 +430,10 @@ Fields:
 id
 code
 content
+file_url
+file_name
+file_size
+file_type
 type
 owner_id
 owner_token
@@ -420,7 +476,7 @@ saved_at
 * QR code joining
 * Code formatting
 * Syntax highlighting
-* File sharing
+* File sharing & Binly FTP Service
 * Version history
 * Fork bins
 * Team workspaces
@@ -433,4 +489,5 @@ Binly is not just a Pastebin clone.
 
 It is:
 
-"A temporary browser-based workspace for instant transfer and collaboration."
+"A temporary browser-based workspace for instant transfer, FTP file hosting, and collaboration."
+
