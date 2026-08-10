@@ -272,7 +272,8 @@ body {
   gap: 16px;
 }
 
-.user-avatar {
+.user-avatar,
+.home-btn {
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -285,11 +286,22 @@ body {
   align-items: center;
   border: 2px solid var(--border-color);
   box-shadow: 2px 2px 0px var(--border-color);
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  cursor: pointer;
+  padding: 0;
+  outline: none;
 }
 
-.user-avatar:hover {
+.user-avatar:hover,
+.home-btn:hover {
   transform: translateY(-1px);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.user-avatar:active,
+.home-btn:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 0px var(--border-color);
 }
 
 .info-btn {

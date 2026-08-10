@@ -19,6 +19,7 @@ const views = {
 
 // Error Page Elements
 const btnErrorHome = document.getElementById('btn-error-home');
+const btnHeaderHome = document.getElementById('btn-header-home');
 const logoHome = document.getElementById('logo-home');
 const infoBtn = document.getElementById('info-btn-dialog');
 
@@ -147,6 +148,9 @@ window.addEventListener('popstate', handleRouting);
 
 if (logoHome) {
   logoHome.addEventListener('click', () => navigateTo('/'));
+}
+if (btnHeaderHome) {
+  btnHeaderHome.addEventListener('click', () => navigateTo('/'));
 }
 if (btnErrorHome) {
   btnErrorHome.addEventListener('click', () => navigateTo('/'));
