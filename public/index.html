@@ -86,7 +86,9 @@
       </svg>
     </div>
     <div class="header-right-actions">
-      <div class="user-avatar">U</div>
+      <button class="home-btn user-avatar" id="btn-header-home" title="Go to Home" aria-label="Go to Home">
+        <i class="fa-solid fa-house"></i>
+      </button>
       <div class="info-btn" id="info-btn-dialog" title="About Binly"><i class="fa-solid fa-circle-info"></i></div>
     </div>
   </header>
@@ -142,7 +144,7 @@
             </div>
           </div>
           <div class="meta-row-bottom">
-            <i class="fa-regular fa-clock"></i> <span id="owner-status-badge">Status: Owned by you. Expires in 1h / 15m idle.</span>
+            <i class="fa-regular fa-clock"></i> <span id="owner-status-badge">Status: Owned by you. Expires after 15m idle or disconnect.</span>
           </div>
         </div>
         
@@ -212,7 +214,7 @@
             </div>
           </div>
           <div class="meta-row-bottom">
-            <i class="fa-regular fa-clock"></i> <span id="viewer-status-badge">Viewer View. Expires 1 hour from now, or 15 mins idle.</span>
+            <i class="fa-regular fa-clock"></i> <span id="viewer-status-badge">Viewer View. Expires after 15 mins idle or host disconnect.</span>
           </div>
         </div>
         
@@ -279,7 +281,6 @@
         </div>
       </div>
     </dialog>
-
     <!-- Custom QR Code Modal -->
     <dialog id="qr-modal-dialog" class="custom-dialog qr-dialog">
       <div class="dialog-content qr-dialog-content">

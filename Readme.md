@@ -140,13 +140,83 @@ A bin is temporary.
 
 Destroy conditions:
 
-1. Owner leaves for 15 minutes
-
-or
-
-2. No activity for 1 hour
+Owner leaves or remains inactive for 15 minutes.
 
 ---
+
+# Version 1.5 — Binly FTP as a Service (File Transfer Protocol)
+
+## Goal
+
+Extend Binly beyond text/code to zero-friction temporary file hosting and transfers up to 100 MB.
+
+No registration. No credentials. No complex FTP clients required.
+
+---
+
+## Try Binly FTP (Landing Page Section)
+
+On the landing page, users can choose between standard text/code clipboards and **Binly FTP**:
+
+1. **Host & Upload**: Simply drag & drop or upload any PDF, image, video, document, or binary asset **under 100 MB**.
+2. **Generate Code**: Binly automatically provisions a unique 6-digit bin access code (e.g. `F9K32X`).
+3. **Viewer Access & Download**: The receiver enters the 6-digit bin code on any device and instantly streams or downloads the hosted file.
+
+```
++--------------------------------------------------------+
+|                   TRY BINLY FTP                       |
+|                                                        |
+|  [ Upload File (PDF, Image, Video < 100MB) ]           |
+|                           ↓                            |
+|             Generated Bin Code: F9K32X                 |
+|                           ↓                            |
+|  Viewer enters code "F9K32X" ---> Downloads file       |
++--------------------------------------------------------+
+```
+
+---
+
+## Core Binly FTP Feature Matrix
+
+### 1. Zero-Friction Transfer Modes
+* **One-Click Web FTP**: Drag & drop or pick any file up to 100 MB directly in the browser.
+* **Terminal / CLI FTP (cURL & HTTP)**: Upload files straight from your terminal without opening a browser:
+  ```bash
+  # Upload via CLI
+  curl -F "file=@presentation.pdf" https://binly.app/api/ftp/upload
+  # Output: {"code":"F9K32X","expiresIn":"15m idle"}
+
+  # Download via CLI
+  curl -O https://binly.app/api/ftp/F9K32X/download
+  ```
+* **Instant QR Beam**: Generate dynamic QR codes for uploaded files so mobile devices can scan and download media instantly without typing codes.
+
+---
+
+### 2. File Streaming & Native Preview Engine
+* **Instant Media Streaming**: Stream MP4, WebM, MP3, and WAV files directly inside the viewer modal before downloading.
+* **PDF & Document Reader**: Integrated in-browser renderer for PDFs, markdown files, and image assets (PNG, JPG, SVG, WebP, GIF).
+* **Archive Inspector**: Preview zip contents without unpacking to verify contents before downloading.
+
+---
+
+### 3. Security, Privacy & Control
+* **Burn-on-Read / Self-Destruct**: Host can toggle "Delete file after first download" for sensitive single-use transfers.
+* **Password / PIN Lock**: Host can set a 4-digit PIN for sensitive FTP bins.
+* **Granular Download Counter & Logs**: Real-time Socket.IO notification when a viewer starts downloading or finishes fetching the file.
+* **End-to-End Encryption (Optional)**: In-browser AES-256 client-side encryption before uploading, decrypting in recipient browser with explicit secret key.
+
+---
+
+### 4. Storage & Lifecycle Rules
+* **Strict Size Limit**: Up to **100 MB** per file/bin.
+* **Auto-Cleanup / Ephemeral Storage**: Files reside in high-speed ephemeral object storage / memory cache. Files auto-destruct after:
+  - 15 minutes of host disconnect or inactivity
+  - Explicit manual deletion by host
+* **Resumable & Chunked Uploads**: Reliable chunked upload pipeline for unstable mobile/wifi connections.
+
+---
+
 
 # Version 2 — Accounts and Private Bins
 
@@ -321,13 +391,24 @@ Rules:
 
 ---
 
+# Additional Features & Roadmap
+
+* **QR Code Quick Join**: Mobile scan-to-open for instant zero-type transfers across devices.
+* **File Upload & Drag-and-Drop**: Direct drop file uploads into bins for text, code, or FTP files.
+* **Live Socket Sync**: Real-time broadcast notification on content updates, owner disconnects, or bin deletions.
+* **Smart Line Gutter & Syntax Highlighting**: Auto line-numbering and formatting tailored for developer snippet sharing.
+* **PWA & Offline UI Capabilities**: Installable progressive web app experience for quick access.
+* **Binly FTP Storage**: High-speed ephemeral binary storage (< 100 MB) for media, docs, and archives.
+
+---
+
 # System Architecture
 
 Frontend:
 
-* React
-* Monaco Editor
-* Tailwind CSS
+* React / Modern HTML5 Vanilla JS UI
+* Monaco Editor / Custom Code Editor
+* Tailwind CSS / CSS3 Glassmorphism System
 
 Backend:
 
@@ -345,7 +426,7 @@ Collaboration:
 
 Temporary Storage:
 
-* Redis
+* Redis / SQLite ephemera
 
 Permanent Storage:
 
@@ -378,6 +459,10 @@ Fields:
 id
 code
 content
+file_url
+file_name
+file_size
+file_type
 type
 owner_id
 owner_token
@@ -420,7 +505,7 @@ saved_at
 * QR code joining
 * Code formatting
 * Syntax highlighting
-* File sharing
+* File sharing & Binly FTP Service
 * Version history
 * Fork bins
 * Team workspaces
@@ -433,4 +518,5 @@ Binly is not just a Pastebin clone.
 
 It is:
 
-"A temporary browser-based workspace for instant transfer and collaboration."
+"A temporary browser-based workspace for instant transfer, FTP file hosting, and collaboration."
+

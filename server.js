@@ -28,7 +28,7 @@ app.post('/api/bins', async (req, res) => {
       code: bin.code,
       content: bin.content,
       ownerToken: bin.ownerToken,
-      expiresIn: '1h / 15m idle'
+      expiresIn: '15m idle / disconnect'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -47,11 +47,11 @@ app.get('/api/bins/:code', async (req, res) => {
   
   const isOwner = bin.ownerToken === ownerTokenHeader;
   
-  // Calculate expiry estimate
+  // Calculate expiry estimate (15 mins idle)
   const now = new Date();
   const timeSinceLastActivity = now - bin.lastActivity;
-  const hourMs = 60 * 60 * 1000;
-  const timeRemaining = Math.max(0, hourMs - timeSinceLastActivity);
+  const fifteenMinsMs = 15 * 60 * 1000;
+  const timeRemaining = Math.max(0, fifteenMinsMs - timeSinceLastActivity);
   const minutesRemaining = Math.round(timeRemaining / 1000 / 60);
 
   res.json({

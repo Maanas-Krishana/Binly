@@ -173,6 +173,7 @@ export class Editor {
         this.editor.addEventListener('input', () => this.triggerSave());
       }
 
+
       if (this.btnClear && this.clearDialog) {
         this.btnClear.addEventListener('click', () => {
           if (!this.editor || this.editor.value === '') {

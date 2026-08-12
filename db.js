@@ -238,31 +238,18 @@ async function setOwnerStatus(code, isConnected) {
 setInterval(async () => {
   const now = Date.now();
   const fifteenMinsAgo = now - 15 * 60 * 1000;
-  const oneHourAgo = now - 60 * 60 * 1000;
   
   if (usePostgres) {
     try {
-      // 1. Owner disconnected for > 15 minutes
-      const res1 = await pool.query(`
+      // 1. Owner disconnected for > 15 minutes OR inactive for > 15 minutes
+      const res = await pool.query(`
         SELECT code FROM bins 
-        WHERE owner_connected = 0 
-          AND owner_disconnect_time IS NOT NULL 
-          AND owner_disconnect_time < $1
+        WHERE (owner_connected = 0 AND owner_disconnect_time IS NOT NULL AND owner_disconnect_time < $1)
+           OR (last_activity < $1)
       `, [fifteenMinsAgo]);
       
-      for (const row of res1.rows) {
-        console.log(`[Expiry] Bin ${row.code} deleted because owner was disconnected for > 15 mins.`);
-        await pool.query('DELETE FROM bins WHERE code = $1', [row.code]);
-      }
-      
-      // 2. No activity for 1 hour
-      const res2 = await pool.query(`
-        SELECT code FROM bins 
-        WHERE last_activity < $1
-      `, [oneHourAgo]);
-      
-      for (const row of res2.rows) {
-        console.log(`[Expiry] Bin ${row.code} deleted due to inactivity for > 1 hour.`);
+      for (const row of res.rows) {
+        console.log(`[Expiry] Bin ${row.code} deleted due to 15m idle / disconnect.`);
         await pool.query('DELETE FROM bins WHERE code = $1', [row.code]);
       }
     } catch (err) {
@@ -270,25 +257,14 @@ setInterval(async () => {
     }
   } else {
     // SQLite Cleanups
-    const expiredOwners = db.prepare(`
+    const expiredBins = db.prepare(`
       SELECT code FROM bins 
-      WHERE ownerConnected = 0 
-        AND ownerDisconnectTime IS NOT NULL 
-        AND ownerDisconnectTime < ?
-    `).all(fifteenMinsAgo);
+      WHERE (ownerConnected = 0 AND ownerDisconnectTime IS NOT NULL AND ownerDisconnectTime < ?)
+         OR (lastActivity < ?)
+    `).all(fifteenMinsAgo, fifteenMinsAgo);
     
-    for (const row of expiredOwners) {
-      console.log(`[Expiry] Bin ${row.code} deleted because owner was disconnected for > 15 mins.`);
-      db.prepare('DELETE FROM bins WHERE code = ?').run(row.code);
-    }
-    
-    const expiredIdle = db.prepare(`
-      SELECT code FROM bins 
-      WHERE lastActivity < ?
-    `).all(oneHourAgo);
-    
-    for (const row of expiredIdle) {
-      console.log(`[Expiry] Bin ${row.code} deleted due to inactivity for > 1 hour.`);
+    for (const row of expiredBins) {
+      console.log(`[Expiry] Bin ${row.code} deleted due to 15m idle / disconnect.`);
       db.prepare('DELETE FROM bins WHERE code = ?').run(row.code);
     }
   }
