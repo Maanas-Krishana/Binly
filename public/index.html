@@ -25,10 +25,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- PWA Meta & Icons -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Binly">
+  <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+
   <!-- Stylesheets -->
   <link rel="stylesheet" href="/style.css">
   <!-- FontAwesome for mockup icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- QRCode.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -120,6 +130,9 @@
               <span id="owner-bin-code" class="meta-code">------</span>
             </div>
             <div class="meta-actions">
+              <button class="btn-meta-action" id="btn-qr-owner" title="Show QR Code">
+                <i class="fa-solid fa-qrcode"></i> QR
+              </button>
               <button class="btn-meta-action" id="btn-share-owner" title="Share Bin Link">
                 <i class="fa-solid fa-share-nodes"></i> Share
               </button>
@@ -142,8 +155,18 @@
                 <span class="status-indicator live"></span> Live
               </span>
               <span class="save-status-text" id="owner-save-status">Saved</span>
+              <input type="file" id="owner-file-input" style="display: none;" accept=".txt,.js,.py,.html,.css,.json,.md,.cpp,.c,.java,.ts,.json,.csv" />
+              <button class="btn-copy-editor" id="btn-upload-owner" title="Upload / Drag & Drop File">
+                <i class="fa-solid fa-file-arrow-up"></i> Upload
+              </button>
+              <button class="btn-copy-editor" id="btn-download-owner" title="Download Snippet File">
+                <i class="fa-solid fa-file-arrow-down"></i> Download
+              </button>
               <button class="btn-copy-editor" id="btn-copy-owner" title="Copy Content">
                 <i class="fa-regular fa-copy"></i>
+              </button>
+              <button class="btn-copy-editor" id="btn-clear-owner" title="Clear Content">
+                <i class="fa-solid fa-eraser"></i> Clear
               </button>
             </div>
           </div>
@@ -177,6 +200,9 @@
               <span id="viewer-bin-code" class="meta-code">------</span>
             </div>
             <div class="meta-actions">
+              <button class="btn-meta-action" id="btn-qr-viewer" title="Show QR Code">
+                <i class="fa-solid fa-qrcode"></i> QR
+              </button>
               <button class="btn-meta-action" id="btn-share-viewer" title="Share Bin Link">
                 <i class="fa-solid fa-share-nodes"></i> Share
               </button>
@@ -199,6 +225,9 @@
                 <span class="status-indicator live"></span> Live
               </span>
               <span class="save-status-text" id="viewer-save-status">Synced</span>
+              <button class="btn-copy-editor" id="btn-download-viewer" title="Download Snippet File">
+                <i class="fa-solid fa-file-arrow-down"></i> Download
+              </button>
             </div>
           </div>
           <div class="editor-body no-gutter">
@@ -235,6 +264,33 @@
           <button id="btn-confirm-delete-cancel" class="btn btn-dialog-cancel">Cancel</button>
           <button id="btn-confirm-delete-ok" class="btn btn-dialog-ok">Delete</button>
         </div>
+      </div>
+    </dialog>
+
+    <!-- Custom Clear Confirmation Dialog -->
+    <dialog id="clear-confirm-dialog" class="custom-dialog">
+      <div class="dialog-content">
+        <div class="dialog-icon" style="color: var(--accent-red);"><i class="fa-solid fa-eraser"></i></div>
+        <h3 class="dialog-title">Clear all content?</h3>
+        <p class="dialog-message">Are you sure you want to clear all text and code from this bin? This action cannot be undone.</p>
+        <div class="dialog-actions">
+          <button id="btn-confirm-clear-cancel" class="btn btn-dialog-cancel">Cancel</button>
+          <button id="btn-confirm-clear-ok" class="btn btn-dialog-ok">Clear</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Custom QR Code Modal -->
+    <dialog id="qr-modal-dialog" class="custom-dialog qr-dialog">
+      <div class="dialog-content qr-dialog-content">
+        <div class="qr-dialog-header">
+          <h3 class="qr-dialog-title">Scan to Join Bin</h3>
+          <button class="qr-close-btn" id="btn-qr-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="qr-code-wrapper">
+          <div id="qr-code-canvas-container"></div>
+        </div>
+        <p class="qr-dialog-hint">Scan with your phone camera to open this bin instantly.</p>
       </div>
     </dialog>
   </main>
