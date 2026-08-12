@@ -21,6 +21,10 @@ export class Editor {
       this.editorCard = this.editor ? this.editor.closest('.editor-card') : null;
       this.saveStatusText = document.getElementById('owner-save-status');
       this.connectionStatus = document.getElementById('owner-connection-status');
+      this.btnClear = document.getElementById('btn-clear-owner');
+      this.clearDialog = document.getElementById('clear-confirm-dialog');
+      this.btnConfirmClearCancel = document.getElementById('btn-confirm-clear-cancel');
+      this.btnConfirmClearOk = document.getElementById('btn-confirm-clear-ok');
     } else {
       this.editor = document.getElementById('viewer-editor');
       this.btnCopy = document.getElementById('btn-copy-viewer');
@@ -168,6 +172,30 @@ export class Editor {
 
         this.editor.addEventListener('input', () => this.triggerSave());
       }
+
+
+      if (this.btnClear && this.clearDialog) {
+        this.btnClear.addEventListener('click', () => {
+          if (!this.editor || this.editor.value === '') {
+            showToast('Bin is already empty', 'info');
+            return;
+          }
+          this.clearDialog.showModal();
+        });
+      }
+
+      if (this.btnConfirmClearCancel && this.clearDialog) {
+        this.btnConfirmClearCancel.addEventListener('click', () => {
+          this.clearDialog.close();
+        });
+      }
+
+      if (this.btnConfirmClearOk && this.clearDialog) {
+        this.btnConfirmClearOk.addEventListener('click', () => {
+          this.clearDialog.close();
+          this.clearContent();
+        });
+      }
     }
   }
 
@@ -214,6 +242,14 @@ export class Editor {
         if (this.saveStatusText) this.saveStatusText.textContent = 'Save Error';
       }
     }, this.debounceDelay);
+  }
+
+  clearContent() {
+    if (!this.editor) return;
+    this.editor.value = '';
+    this.updateLineNumbers();
+    this.triggerSave();
+    showToast('Content cleared', 'success');
   }
 
   copyContent() {
@@ -266,6 +302,9 @@ export class Editor {
     if (this.saveStatusInterval) {
       clearInterval(this.saveStatusInterval);
       this.saveStatusInterval = null;
+    }
+    if (this.clearDialog && this.clearDialog.open) {
+      this.clearDialog.close();
     }
   }
 }
