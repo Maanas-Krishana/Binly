@@ -1,5 +1,6 @@
 # 🚀 Binly
 
+
 > **A zero-friction, real-time temporary text, code, and file sharing platform built for instant cross-device transfers.**
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?style=flat-square&logo=nodedotjs)](https://nodejs.org/)
@@ -13,6 +14,7 @@
 
 ## 📖 Overview
 
+
 **Binly** solves a everyday developer & student pain point: transferring text, code snippets, or files from one device to another instantly **without**:
 
 - ❌ Signing up or logging into messaging apps (WhatsApp, Telegram, Discord)
@@ -21,6 +23,7 @@
 - ❌ Installing third-party software
 
 ### 💡 Example Workflow
+
 
 1. Open **Binly** on your phone.
 2. Click **Create Bin** and paste your code snippet or drop a file.
@@ -31,6 +34,7 @@
 ---
 
 ## ✨ Key Features
+
 
 - **⚡ Zero-Friction Bins**: Instant clipboard creation with 6-character access codes.
 - **🔒 Passwordless Ownership**: Client-side `ownerToken` stored in browser `localStorage` grants administrative controls without requiring user accounts.
@@ -65,6 +69,7 @@
 ---
 
 ## 📂 Folder Structure
+
 
 Below is the annotated directory layout of the repository:
 
@@ -109,6 +114,7 @@ Binly/
 ---
 
 ## 🚀 Getting Started (Local Development)
+
 
 Follow these steps to get a local development instance of **Binly** up and running on your machine.
 
@@ -159,6 +165,7 @@ http://localhost:3000
 
 ## 🐳 Running with Docker
 
+
 You can also run Binly in an isolated container using Docker:
 
 ```bash
@@ -174,6 +181,7 @@ Now visit `http://localhost:3000` in your web browser.
 ---
 
 ## 📡 REST API & Socket Reference
+
 
 ### REST Endpoints
 
@@ -235,6 +243,7 @@ Now visit `http://localhost:3000` in your web browser.
 ```
 
 ---
+
 
 ## 🤝 Contributing
 
