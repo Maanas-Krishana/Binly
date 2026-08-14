@@ -10,6 +10,9 @@ export class Editor {
     this.lastSaveTime = null;
     this.currentSaveState = 'none';
     this.saveStatusInterval = null;
+    this.preClearContent = null;
+    this.clearSaveTimeout = null;
+    this.clearToast = null;
 
     if (isOwner) {
       this.editor = document.getElementById('owner-editor');
@@ -22,9 +25,6 @@ export class Editor {
       this.saveStatusText = document.getElementById('owner-save-status');
       this.connectionStatus = document.getElementById('owner-connection-status');
       this.btnClear = document.getElementById('btn-clear-owner');
-      this.clearDialog = document.getElementById('clear-confirm-dialog');
-      this.btnConfirmClearCancel = document.getElementById('btn-confirm-clear-cancel');
-      this.btnConfirmClearOk = document.getElementById('btn-confirm-clear-ok');
     } else {
       this.editor = document.getElementById('viewer-editor');
       this.btnCopy = document.getElementById('btn-copy-viewer');
@@ -174,25 +174,12 @@ export class Editor {
       }
 
 
-      if (this.btnClear && this.clearDialog) {
+      if (this.btnClear) {
         this.btnClear.addEventListener('click', () => {
           if (!this.editor || this.editor.value === '') {
             showToast('Bin is already empty', 'info');
             return;
           }
-          this.clearDialog.showModal();
-        });
-      }
-
-      if (this.btnConfirmClearCancel && this.clearDialog) {
-        this.btnConfirmClearCancel.addEventListener('click', () => {
-          this.clearDialog.close();
-        });
-      }
-
-      if (this.btnConfirmClearOk && this.clearDialog) {
-        this.btnConfirmClearOk.addEventListener('click', () => {
-          this.clearDialog.close();
           this.clearContent();
         });
       }
@@ -222,6 +209,17 @@ export class Editor {
   }
 
   triggerSave() {
+    // If there is an active clear pending undo, cancel it and dismiss the toast
+    if (this.clearSaveTimeout) {
+      clearTimeout(this.clearSaveTimeout);
+      this.clearSaveTimeout = null;
+    }
+    if (this.clearToast) {
+      this.clearToast.dismiss();
+      this.clearToast = null;
+    }
+    this.preClearContent = null;
+
     this.updateLineNumbers();
     this.setSaveStatus('Saving...');
 
@@ -246,10 +244,52 @@ export class Editor {
 
   clearContent() {
     if (!this.editor) return;
+    
+    // Backup current text
+    this.preClearContent = this.editor.value;
+    
+    // Clear editor immediately in UI
     this.editor.value = '';
     this.updateLineNumbers();
-    this.triggerSave();
-    showToast('Content cleared', 'success');
+    this.setSaveStatus('Saving...');
+
+    // Dismiss existing clear toast and timeout if active
+    if (this.clearToast) {
+      this.clearToast.dismiss();
+    }
+    if (this.clearSaveTimeout) {
+      clearTimeout(this.clearSaveTimeout);
+    }
+
+    // Set timeout to commit the cleared state after 8 seconds
+    this.clearSaveTimeout = setTimeout(() => {
+      this.preClearContent = null;
+      this.clearSaveTimeout = null;
+      this.clearToast = null;
+      
+      // Perform final save of the cleared state
+      this.triggerSave();
+    }, 8000);
+
+    // Show undo toast
+    this.clearToast = showToast('Bin content cleared', 'info', {
+      duration: 8000,
+      action: {
+        text: 'Undo',
+        onClick: () => {
+          if (this.clearSaveTimeout) {
+            clearTimeout(this.clearSaveTimeout);
+            this.clearSaveTimeout = null;
+          }
+          this.editor.value = this.preClearContent;
+          this.updateLineNumbers();
+          this.preClearContent = null;
+          this.clearToast = null;
+          showToast('Restored content', 'success');
+          this.setSaveStatus('Saved');
+        }
+      }
+    });
   }
 
   copyContent() {
@@ -303,8 +343,15 @@ export class Editor {
       clearInterval(this.saveStatusInterval);
       this.saveStatusInterval = null;
     }
-    if (this.clearDialog && this.clearDialog.open) {
-      this.clearDialog.close();
+    // If navigating away, commit any pending clear immediately
+    if (this.clearSaveTimeout) {
+      clearTimeout(this.clearSaveTimeout);
+      this.clearSaveTimeout = null;
+      this.triggerSave();
+    }
+    if (this.clearToast) {
+      this.clearToast.dismiss();
+      this.clearToast = null;
     }
   }
 }
