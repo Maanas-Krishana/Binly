@@ -1009,6 +1009,31 @@ body {
   color: var(--accent-red);
 }
 
+.toast-action-btn {
+  margin-left: 12px;
+  background-color: var(--accent-purple);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border-color);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.toast-action-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--border-color);
+}
+
+.toast-action-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--border-color);
+}
+
 /* ==========================================================================
    Responsive Adaptation
    ========================================================================== */
