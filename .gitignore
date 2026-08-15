@@ -3,10 +3,9 @@ binly.db
 binly.db-journal
 *.log
 .DS_Store
-#.agents
-.agents/*
-!.agents/rules/
+.agents
 .gemini
 rana changes report/
+
 
 
