@@ -4,7 +4,7 @@
 > **A zero-friction, real-time temporary text, code, and file sharing platform built for instant cross-device transfers.**
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?style=flat-square&logo=nodedotjs)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/License-ISC-blue.svg?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Database](https://img.shields.io/badge/Database-SQLite%20%7C%20PostgreSQL-003B57?style=flat-square&logo=sqlite)](https://sqlite.org/)
 [![WebSockets](https://img.shields.io/badge/Realtime-Socket.IO-010101?style=flat-square&logo=socketdotio)](https://socket.io/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=flat-square&logo=pwa)](public/manifest.json)
@@ -266,7 +266,7 @@ Contributions make the open-source community an amazing place to learn, inspire,
 
 ## 📄 License
 
-Distributed under the **ISC License**. See `LICENSE` for more information.
+Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
