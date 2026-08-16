@@ -176,3 +176,20 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+
+// Track anonymous visitor session telemetry
+(function trackVisitor() {
+  try {
+    let visitorId = localStorage.getItem('binly_visitor_id');
+    if (!visitorId) {
+      visitorId = 'v_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      localStorage.setItem('binly_visitor_id', visitorId);
+    }
+    fetch('/api/analytics/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorId })
+    }).catch(() => {});
+  } catch (e) {}
+})();
+

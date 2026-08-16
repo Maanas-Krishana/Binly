@@ -191,6 +191,10 @@ Now visit `http://localhost:3000` in your web browser.
 | **GET** | `/api/bins/:code` | Retrieve Bin content and status | `owner-token` *(optional)* |
 | **PUT** | `/api/bins/:code` | Update Bin content | `owner-token` *(Required for owner)* |
 | **DELETE** | `/api/bins/:code` | Delete Bin immediately | `owner-token` *(Required for owner)* |
+| **POST** | `/api/admin/login` | Verify Admin Secret Key | None |
+| **GET** | `/api/admin/analytics` | Fetch real-time telemetry, lines shared, & active bins | `x-admin-key` |
+| **DELETE** | `/api/admin/bins/:code` | Admin force termination of an active bin | `x-admin-key` |
+
 
 #### 1. Create Bin Sample Payload (`POST /api/bins`)
 ```json
@@ -270,12 +274,15 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
-## 👨‍💻 Maintainer
+## 👨‍💻 Maintainers
 
-Created & maintained with ❤️ by **[Maanas Krishana](https://github.com/Maanas-Krishana)**.
+Created & maintained with ❤️ by:
+- **[Maanas Krishana](https://github.com/Maanas-Krishana)**
+- **[Ranayudh](https://github.com/RanayudhShukla)**
 
 ---
 
 <p center align="center">
   <i>Binly — Fast, frictionless, real-time sharing for developers everywhere.</i>
 </p>
+
