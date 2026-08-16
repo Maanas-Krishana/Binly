@@ -276,9 +276,8 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ## 👨‍💻 Maintainers
 
-Created & maintained with ❤️ by:
-- **[Maanas Krishana](https://github.com/Maanas-Krishana)**
-- **[Ranayudh](https://github.com/RanayudhShukla)**
+Created & maintained with ❤️ by **[Human](https://github.com/Maanas-Krishana)** & **[Ranayudh](https://github.com/RanayudhShukla/)**.
+
 
 ---
 
