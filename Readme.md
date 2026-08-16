@@ -274,12 +274,15 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
-## 👨‍💻 Maintainer
+## 👨‍💻 Maintainers
 
-Created & maintained with ❤️ by **[Maanas Krishana](https://github.com/Maanas-Krishana)**.
+Created & maintained with ❤️ by:
+- **[Maanas Krishana](https://github.com/Maanas-Krishana)**
+- **[Ranayudh](https://github.com/RanayudhShukla)**
 
 ---
 
 <p center align="center">
   <i>Binly — Fast, frictionless, real-time sharing for developers everywhere.</i>
 </p>
+
