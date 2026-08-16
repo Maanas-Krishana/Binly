@@ -5,7 +5,11 @@ binly.db-journal
 .DS_Store
 .agents
 .gemini
+.env
+.env.local
+.env.*.local
 rana changes report/
+
 
 
 

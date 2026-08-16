@@ -6,6 +6,10 @@ npm-debug.log
 .gitignore
 .dockerignore
 .agents
+.env
+.env.local
+.env.*.local
 walkthrough.md
 .DS_Store
 *.log
+

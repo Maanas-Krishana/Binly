@@ -1,5 +1,7 @@
+require('dotenv').config();
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+
 
 const usePostgres = !!process.env.DATABASE_URL;
 

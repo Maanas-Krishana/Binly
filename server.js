@@ -1,8 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
 const db = require('./db');
+
 
 const app = express();
 const server = http.createServer(app);
@@ -13,7 +15,7 @@ const io = socketIo(server, {
   }
 });
 
-const ADMIN_KEY = process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET || 'binlyadmin2026';
+const ADMIN_KEY = process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET;
 
 // Middleware
 app.use(express.json());
@@ -21,6 +23,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Admin authentication middleware
 function requireAdminAuth(req, res, next) {
+  if (!ADMIN_KEY) {
+    return res.status(500).json({ error: 'Server misconfiguration: ADMIN_PASSWORD is not configured in .env' });
+  }
   const authHeader = req.headers['x-admin-key'] || req.headers['authorization'];
   let token = authHeader;
   if (token && token.startsWith('Bearer ')) {
@@ -31,6 +36,7 @@ function requireAdminAuth(req, res, next) {
   }
   next();
 }
+
 
 // ----------------------------------------------------
 // Public & Core API Routes
@@ -153,12 +159,16 @@ app.delete('/api/bins/:code', async (req, res) => {
 // Admin Login verification
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
-  if (password === ADMIN_KEY) {
+  if (!ADMIN_KEY) {
+    return res.status(500).json({ error: 'ADMIN_PASSWORD is not configured in .env' });
+  }
+  if (password && password === ADMIN_KEY) {
     res.json({ success: true, token: ADMIN_KEY });
   } else {
     res.status(401).json({ error: 'Invalid admin credentials' });
   }
 });
+
 
 // Admin Analytics Telemetry
 app.get('/api/admin/analytics', requireAdminAuth, async (req, res) => {
