@@ -4,7 +4,7 @@
 BIP Number : 0001
 Title      : Binly Architectural Specification & Version Roadmap
 Status     : Active / Living Document
-Author(s)  : Maanas Krishana (@Maanas-Krishana), Ranayudh (@RanayudhShukla)
+Author(s)  : Maanas Krishana (@Maanas-Krishana)
 Created    : 2026-08-13
 Target Repo: Binly Core
 ```
