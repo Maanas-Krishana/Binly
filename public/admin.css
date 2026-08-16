@@ -172,6 +172,10 @@ body.admin-body {
   box-shadow: 2px 2px 0px #000;
 }
 
+.hidden {
+  display: none !important;
+}
+
 .auth-error-msg {
   color: var(--admin-accent-red);
   font-size: 0.85rem;
@@ -180,7 +184,14 @@ body.admin-body {
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid rgba(239, 68, 68, 0.3);
+  display: block;
 }
+
+.auth-error-msg:empty,
+.auth-error-msg.hidden {
+  display: none !important;
+}
+
 
 .auth-footer {
   margin-top: 24px;
