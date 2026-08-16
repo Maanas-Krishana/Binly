@@ -13,11 +13,41 @@ const io = socketIo(server, {
   }
 });
 
+const ADMIN_KEY = process.env.ADMIN_PASSWORD || process.env.ADMIN_SECRET || 'binlyadmin2026';
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API Routes
+// Admin authentication middleware
+function requireAdminAuth(req, res, next) {
+  const authHeader = req.headers['x-admin-key'] || req.headers['authorization'];
+  let token = authHeader;
+  if (token && token.startsWith('Bearer ')) {
+    token = token.slice(7);
+  }
+  if (!token || token !== ADMIN_KEY) {
+    return res.status(401).json({ error: 'Unauthorized: Invalid admin key' });
+  }
+  next();
+}
+
+// ----------------------------------------------------
+// Public & Core API Routes
+// ----------------------------------------------------
+
+// Record unique visitor telemetry
+app.post('/api/analytics/visit', async (req, res) => {
+  try {
+    const { visitorId } = req.body;
+    if (visitorId) {
+      await db.recordVisitor(visitorId);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Create a new bin
 app.post('/api/bins', async (req, res) => {
@@ -116,6 +146,78 @@ app.delete('/api/bins/:code', async (req, res) => {
   }
 });
 
+// ----------------------------------------------------
+// Admin & Analytics API Endpoints
+// ----------------------------------------------------
+
+// Admin Login verification
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  if (password === ADMIN_KEY) {
+    res.json({ success: true, token: ADMIN_KEY });
+  } else {
+    res.status(401).json({ error: 'Invalid admin credentials' });
+  }
+});
+
+// Admin Analytics Telemetry
+app.get('/api/admin/analytics', requireAdminAuth, async (req, res) => {
+  try {
+    const analytics = await db.getAnalytics();
+    
+    // Calculate active Socket.IO connections & rooms
+    const activeSockets = io.engine.clientsCount || 0;
+    const rooms = io.sockets.adapter.rooms;
+    let activeBinRooms = 0;
+    rooms.forEach((_, roomName) => {
+      if (roomName.startsWith('bin:')) activeBinRooms++;
+    });
+
+    const uptimeSeconds = Math.floor(process.uptime());
+    const mem = process.memoryUsage();
+
+    res.json({
+      success: true,
+      data: {
+        ...analytics,
+        realtime: {
+          activeSockets,
+          activeBinRooms,
+          uptimeSeconds,
+          memoryMb: Math.round(mem.heapUsed / 1024 / 1024),
+          totalMemoryMb: Math.round(mem.heapTotal / 1024 / 1024),
+          nodeVersion: process.version,
+          dbEngine: process.env.DATABASE_URL ? 'PostgreSQL' : 'SQLite'
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Admin Force Delete Bin
+app.delete('/api/admin/bins/:code', requireAdminAuth, async (req, res) => {
+  const { code } = req.params;
+  const uppercaseCode = code.toUpperCase();
+  try {
+    await db.adminDeleteBin(uppercaseCode);
+    io.to(`bin:${uppercaseCode}`).emit('bin-deleted');
+    res.json({ success: true, message: `Bin ${uppercaseCode} terminated by admin.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ----------------------------------------------------
+// Page Routes
+// ----------------------------------------------------
+
+// Admin Dashboard page
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // Fallback routing: Match 6-character codes and serve index.html
 app.get('/:code', (req, res, next) => {
   const code = req.params.code;
@@ -130,9 +232,11 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// ----------------------------------------------------
 // Socket.IO Logic
+// ----------------------------------------------------
 io.on('connection', (socket) => {
-  console.log(`[Socket] Connected: ${socket.id}`);
+  console.log(`[Socket] Connected: ${socket.id} (Active total: ${io.engine.clientsCount})`);
   
   socket.on('join-bin', async ({ code, isOwner, ownerToken }) => {
     const uppercaseCode = code.toUpperCase();
@@ -157,7 +261,7 @@ io.on('connection', (socket) => {
   });
   
   socket.on('disconnect', async () => {
-    console.log(`[Socket] Disconnected: ${socket.id}`);
+    console.log(`[Socket] Disconnected: ${socket.id} (Remaining: ${io.engine.clientsCount})`);
     if (socket.binCode && socket.isOwner) {
       await db.setOwnerStatus(socket.binCode, false);
       console.log(`[Socket] Owner disconnected from bin ${socket.binCode}. Expiry timer started.`);
@@ -171,5 +275,6 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`========================================`);
   console.log(`Binly Server running on http://localhost:${PORT}`);
+  console.log(`Admin Dashboard: http://localhost:${PORT}/admin`);
   console.log(`========================================`);
 });

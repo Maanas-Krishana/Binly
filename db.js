@@ -6,6 +6,12 @@ const usePostgres = !!process.env.DATABASE_URL;
 let db; // SQLite connection
 let pool; // Postgres connection pool
 
+// Helper to count lines of text
+function countLines(text) {
+  if (!text || typeof text !== 'string' || text.length === 0) return 0;
+  return (text.match(/\n/g) || []).length + 1;
+}
+
 if (usePostgres) {
   const { Pool } = require('pg');
   pool = new Pool({
@@ -13,7 +19,7 @@ if (usePostgres) {
     ssl: { rejectUnauthorized: false }
   });
   
-  // Initialize table
+  // Initialize tables
   pool.query(`
     CREATE TABLE IF NOT EXISTS bins (
       code TEXT PRIMARY KEY,
@@ -23,7 +29,16 @@ if (usePostgres) {
       last_activity BIGINT,
       owner_connected INTEGER DEFAULT 1,
       owner_disconnect_time BIGINT
-    )
+    );
+    CREATE TABLE IF NOT EXISTS stats (
+      key TEXT PRIMARY KEY,
+      value BIGINT DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS visitors (
+      id TEXT PRIMARY KEY,
+      first_seen BIGINT,
+      last_seen BIGINT
+    );
   `).catch(err => console.error('[Postgres] Table creation error:', err));
 } else {
   const Database = require('better-sqlite3');
@@ -43,8 +58,62 @@ if (usePostgres) {
       lastActivity INTEGER,
       ownerConnected INTEGER DEFAULT 1,
       ownerDisconnectTime INTEGER
-    )
+    );
+    CREATE TABLE IF NOT EXISTS stats (
+      key TEXT PRIMARY KEY,
+      value INTEGER DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS visitors (
+      id TEXT PRIMARY KEY,
+      firstSeen INTEGER,
+      lastSeen INTEGER
+    );
   `);
+}
+
+async function incrementStat(key, delta = 1) {
+  if (delta <= 0) return;
+  if (usePostgres) {
+    await pool.query(`
+      INSERT INTO stats (key, value) VALUES ($1, $2)
+      ON CONFLICT (key) DO UPDATE SET value = stats.value + $2
+    `, [key, delta]);
+  } else {
+    db.prepare(`
+      INSERT INTO stats (key, value) VALUES (?, ?)
+      ON CONFLICT (key) DO UPDATE SET value = value + ?
+    `).run(key, delta, delta);
+  }
+}
+
+async function getStat(key) {
+  if (usePostgres) {
+    const res = await pool.query('SELECT value FROM stats WHERE key = $1', [key]);
+    return res.rows[0] ? Number(res.rows[0].value) : 0;
+  } else {
+    const row = db.prepare('SELECT value FROM stats WHERE key = ?').get(key);
+    return row ? Number(row.value) : 0;
+  }
+}
+
+/**
+ * Record or update a unique visitor session
+ * @param {string} visitorId
+ */
+async function recordVisitor(visitorId) {
+  if (!visitorId || typeof visitorId !== 'string') return;
+  const now = Date.now();
+  if (usePostgres) {
+    await pool.query(`
+      INSERT INTO visitors (id, first_seen, last_seen) VALUES ($1, $2, $2)
+      ON CONFLICT (id) DO UPDATE SET last_seen = $2
+    `, [visitorId, now]);
+  } else {
+    db.prepare(`
+      INSERT INTO visitors (id, firstSeen, lastSeen) VALUES (?, ?, ?)
+      ON CONFLICT (id) DO UPDATE SET lastSeen = ?
+    `).run(visitorId, now, now, now);
+  }
 }
 
 // Helper to generate a unique 6-character code
@@ -98,6 +167,8 @@ async function createBin(content = '') {
   const code = await generateUniqueCode();
   const ownerToken = uuidv4();
   const now = Date.now();
+  const lines = countLines(content);
+  const chars = content ? content.length : 0;
   
   if (usePostgres) {
     await pool.query(`
@@ -110,6 +181,11 @@ async function createBin(content = '') {
       VALUES (?, ?, ?, ?, ?, 1, NULL)
     `).run(code, content, ownerToken, now, now);
   }
+  
+  // Track telemetry
+  await incrementStat('total_bins_created', 1);
+  if (lines > 0) await incrementStat('total_lines_shared', lines);
+  if (chars > 0) await incrementStat('total_chars_shared', chars);
   
   return {
     code,
@@ -159,26 +235,40 @@ async function getBin(code) {
  * @returns {Promise<boolean>} Success
  */
 async function updateBin(code, content, ownerToken) {
-  let dbOwnerToken;
+  let oldRow;
   if (usePostgres) {
-    const res = await pool.query('SELECT owner_token FROM bins WHERE code = $1', [code]);
-    dbOwnerToken = res.rows[0]?.owner_token;
+    const res = await pool.query('SELECT owner_token, content FROM bins WHERE code = $1', [code]);
+    oldRow = res.rows[0];
   } else {
-    const row = db.prepare('SELECT ownerToken FROM bins WHERE code = ?').get(code);
-    dbOwnerToken = row?.ownerToken;
+    oldRow = db.prepare('SELECT ownerToken, content FROM bins WHERE code = ?').get(code);
   }
   
+  const dbOwnerToken = oldRow ? (oldRow.owner_token || oldRow.ownerToken) : null;
   if (!dbOwnerToken) return false;
   if (dbOwnerToken !== ownerToken) {
     throw new Error('Unauthorized update request');
   }
   
+  const oldLines = countLines(oldRow.content || '');
+  const newLines = countLines(content || '');
+  const oldChars = (oldRow.content || '').length;
+  const newChars = (content || '').length;
+
   const now = Date.now();
   if (usePostgres) {
     await pool.query('UPDATE bins SET content = $1, last_activity = $2 WHERE code = $3', [content, now, code]);
   } else {
     db.prepare('UPDATE bins SET content = ?, lastActivity = ? WHERE code = ?').run(content, now, code);
   }
+
+  // Increment lines/chars shared if grew
+  if (newLines > oldLines) {
+    await incrementStat('total_lines_shared', newLines - oldLines);
+  }
+  if (newChars > oldChars) {
+    await incrementStat('total_chars_shared', newChars - oldChars);
+  }
+
   return true;
 }
 
@@ -212,6 +302,19 @@ async function deleteBin(code, ownerToken) {
 }
 
 /**
+ * Admin delete bin (bypasses ownerToken check)
+ * @param {string} code
+ */
+async function adminDeleteBin(code) {
+  if (usePostgres) {
+    await pool.query('DELETE FROM bins WHERE code = $1', [code]);
+  } else {
+    db.prepare('DELETE FROM bins WHERE code = ?').run(code);
+  }
+  return true;
+}
+
+/**
  * Update the owner's socket connection status for a bin
  * @param {string} code 
  * @param {boolean} isConnected 
@@ -233,6 +336,63 @@ async function setOwnerStatus(code, isConnected) {
   }
 }
 
+/**
+ * Get comprehensive platform analytics
+ */
+async function getAnalytics() {
+  const recordedBinsCreated = await getStat('total_bins_created');
+  const recordedLinesShared = await getStat('total_lines_shared');
+  const recordedCharsShared = await getStat('total_chars_shared');
+  
+  let totalUniqueVisitors = 0;
+  let activeBins = [];
+  
+  if (usePostgres) {
+    const vRes = await pool.query('SELECT COUNT(*) as count FROM visitors');
+    totalUniqueVisitors = Number(vRes.rows[0]?.count || 0);
+    
+    const bRes = await pool.query('SELECT * FROM bins ORDER BY created_at DESC');
+    activeBins = bRes.rows.map(mapRow);
+  } else {
+    const vRow = db.prepare('SELECT COUNT(*) as count FROM visitors').get();
+    totalUniqueVisitors = Number(vRow?.count || 0);
+    
+    const bRows = db.prepare('SELECT * FROM bins ORDER BY createdAt DESC').all();
+    activeBins = bRows.map(mapRow);
+  }
+
+  // Calculate current active metrics
+  const activeLines = activeBins.reduce((acc, bin) => acc + countLines(bin.content), 0);
+  const activeChars = activeBins.reduce((acc, bin) => acc + (bin.content ? bin.content.length : 0), 0);
+
+  // Lifetime counts ensure active bins are included even if counter was freshly created
+  const totalBinsCreated = Math.max(recordedBinsCreated, activeBins.length);
+  const totalLinesShared = Math.max(recordedLinesShared, activeLines);
+  const totalCharsShared = Math.max(recordedCharsShared, activeChars);
+  const totalUsers = Math.max(totalUniqueVisitors, totalBinsCreated);
+
+  return {
+    totalBinsCreated,
+    totalUsers,
+    totalUniqueVisitors,
+    totalLinesShared,
+    totalCharsShared,
+    activeBinsCount: activeBins.length,
+    activeLines,
+    activeChars,
+    activeBins: activeBins.map(bin => ({
+      code: bin.code,
+      createdAt: bin.createdAt,
+      lastActivity: bin.lastActivity,
+      lines: countLines(bin.content),
+      chars: bin.content ? bin.content.length : 0,
+      ownerConnected: bin.ownerConnected,
+      ownerDisconnectTime: bin.ownerDisconnectTime,
+      snippet: (bin.content || '').slice(0, 120)
+    }))
+  };
+}
+
 // Background cleanup job for expired bins
 // Checks every 10 seconds
 setInterval(async () => {
@@ -241,7 +401,6 @@ setInterval(async () => {
   
   if (usePostgres) {
     try {
-      // 1. Owner disconnected for > 15 minutes OR inactive for > 15 minutes
       const res = await pool.query(`
         SELECT code FROM bins 
         WHERE (owner_connected = 0 AND owner_disconnect_time IS NOT NULL AND owner_disconnect_time < $1)
@@ -305,6 +464,10 @@ module.exports = {
   getBin,
   updateBin,
   deleteBin,
+  adminDeleteBin,
   setOwnerStatus,
+  recordVisitor,
+  getAnalytics,
+  countLines,
   bins
 };
