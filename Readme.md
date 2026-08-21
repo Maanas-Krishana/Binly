@@ -227,6 +227,7 @@ Now visit `http://localhost:3000` in your web browser.
 
 ## 🔐 Database & Ownership Security Model
 
+
 ```
 +-----------------------------------------------------------------------+
 |                            CREATOR BROWSER                            |
