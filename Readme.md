@@ -15,6 +15,7 @@
 ## 📖 Overview
 
 
+
 **Binly** solves a everyday developer & student pain point: transferring text, code snippets, or files from one device to another instantly **without**:
 
 - ❌ Signing up or logging into messaging apps (WhatsApp, Telegram, Discord)
@@ -23,6 +24,7 @@
 - ❌ Installing third-party software
 
 ### 💡 Example Workflow
+
 
 
 1. Open **Binly** on your phone.
